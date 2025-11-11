@@ -1,25 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { auth } from "../firebase";
-import { onAuthStateChanged } from "firebase/auth";
-import { loadProgress } from "../firestore";
+import React from "react";
 
-export default function ProgressWidget() {
-  const [progress, setProgress] = useState({});
-  const [user, setUser] = useState(null);
-
-  useEffect(() => onAuthStateChanged(auth, u => {
-    setUser(u);
-    if (u) loadProgress(u.uid).then(p => setProgress(p || {}));
-  }), []);
-
+export default function ProgressWidget(){
+  // stub: later connect to Firestore or backend
   return (
-    <div className="card">
-      <h4 className="font-semibold">Your Progress</h4>
-      {user ? (
-        <pre className="text-sm mt-2">{JSON.stringify(progress, null, 2)}</pre>
-      ) : (
-        <p className="text-sm text-gray-500">Sign in to see progress tracking.</p>
-      )}
+    <div style={{marginTop:12}} className="card">
+      <h4>Your Progress</h4>
+      <div>No tracked progress yet. Sign in to save history.</div>
     </div>
   );
 }
