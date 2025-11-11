@@ -1,23 +1,15 @@
-const backendURL = "https://ai-tutor-e5m3.onrender.com"; // your real backend
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import App from "./App";
+import "./styles.css";
 
-async function askAI() {
-  const subject = document.getElementById("subject").value;
-  const question = document.getElementById("question").value;
-  const answerBox = document.getElementById("answer");
-
-  answerBox.textContent = "⏳ Thinking...";
-
-  try {
-    const response = await fetch(`${backendURL}/api/ask`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question, subject }),
-    });
-
-    const data = await response.json();
-    answerBox.textContent = data.answer || "⚠️ No answer from AI.";
-  } catch (error) {
-    console.error(error);
-    answerBox.textContent = "⚠️ Unable to connect to AI Tutor. Try again later.";
-  }
-}
+createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/*" element={<App />} />
+      </Routes>
+    </BrowserRouter>
+  </React.StrictMode>
+);
