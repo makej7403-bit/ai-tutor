@@ -1,44 +1,49 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
-export default function ChatBox({ subject }){
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [answer, setAnswer] = useState("");
+export default function Chat() {
+  const [input, setInput] = useState('');
+  const [messages, setMessages] = useState([]);
 
-  async function ask(){
-    if(!q) return;
-    setLoading(true);
-    setAnswer("");
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE || ""}/api/ai/ask`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, question: q })
-      });
-      const data = await res.json();
-      setAnswer(data.answer || data?.answer?.content || "No answer");
-    } catch (err) {
-      setAnswer("Error: " + (err.message || err));
-    } finally { setLoading(false); }
+  async function sendMessage() {
+    if (!input.trim()) return;
+    const newMessage = { sender: 'user', text: input };
+    setMessages([...messages, newMessage]);
+    setInput('');
+
+    // Call AI API
+    const res = await fetch('https://your-backend-url.onrender.com/api/ask', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: input }),
+    });
+    const data = await res.json();
+    setMessages((prev) => [...prev, { sender: 'ai', text: data.reply }]);
   }
 
   return (
-    <div className="max-w-3xl">
-      <label className="block mb-2">Ask about {subject}</label>
-      <textarea value={q} onChange={e=>setQ(e.target.value)} className="w-full p-2 border rounded" rows={4}/>
-      <div className="flex gap-2 mt-2">
-        <button onClick={ask} disabled={loading} className="px-4 py-2 bg-blue-600 text-white rounded">
-          {loading ? "Thinking..." : "Ask AI"}
-        </button>
-        <button onClick={()=>{setQ(""); setAnswer("");}} className="px-4 py-2 border rounded">Clear</button>
+    <div className="flex flex-col h-full bg-white/5 rounded-xl p-4 shadow-inner">
+      <div className="flex-1 overflow-y-auto mb-3 space-y-2">
+        {messages.map((msg, i) => (
+          <div key={i} className={`p-2 rounded-lg max-w-[80%] ${msg.sender === 'user' ? 'ml-auto bg-cyan-700' : 'bg-gray-700'}`}>
+            {msg.text}
+          </div>
+        ))}
       </div>
-
-      {answer && (
-        <div className="mt-4 p-4 bg-white border rounded shadow-sm">
-          <h4 className="font-semibold">Answer</h4>
-          <div className="whitespace-pre-wrap mt-2">{answer}</div>
-        </div>
-      )}
+      <div className="flex">
+        <input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+          className="flex-1 bg-transparent border border-gray-500 rounded-l px-3 py-2 outline-none"
+          placeholder="Ask AI about Nursing, Biology, Chemistry..."
+        />
+        <button
+          onClick={sendMessage}
+          className="bg-cyan-600 px-4 py-2 rounded-r hover:bg-cyan-700 font-semibold"
+        >
+          Send
+        </button>
+      </div>
     </div>
   );
 }
