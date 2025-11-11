@@ -1,7 +1,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Inter:wght@300;400;600;700&display=swap');
 
-/* then continue with your CSS below */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Basic theme helpers */
 :root {
-  --primary-color: #2563eb;
-  --secondary-color: #f9fafb;
+  --accent: #4db8ff;
+  --muted: #6b7280;
 }
+
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(180deg, #f0f6ff 0%, #eef2ff 100%);
+  color: #0f172a;
+}
+
+/* small utility card */
+.card { background: white; border-radius: 12px; box-shadow: 0 6px 20px rgba(10,10,20,0.06); padding: 1rem; }
+
+/* navbar */
+.navbar { background: rgba(255,255,255,0.8); backdrop-filter: blur(6px); }
+
+/* chat bubbles */
+.bubble-user { background: var(--accent); color: white; padding: 0.6rem 0.9rem; border-radius: 12px; }
+.bubble-ai { background: #f3f4f6; color: #0f172a; padding: 0.6rem 0.9rem; border-radius: 12px; }
+
+/* responsive container */
+.container { max-width: 1100px; margin: 0 auto; padding: 1.25rem; }
