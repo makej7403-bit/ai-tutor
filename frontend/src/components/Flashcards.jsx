@@ -1,32 +1,42 @@
 import React, { useState } from "react";
 
-const Flashcards = ({ subject }) => {
-  const [cards, setCards] = useState([
+const flashcards = {
+  Biology: [
     { question: "What is biology?", answer: "The study of living organisms." },
-    { question: "What is photosynthesis?", answer: "The process by which green plants make food using sunlight." },
-  ]);
-  const [showAnswer, setShowAnswer] = useState(false);
-  const [index, setIndex] = useState(0);
-
-  const nextCard = () => {
-    setShowAnswer(false);
-    setIndex((prev) => (prev + 1) % cards.length);
-  };
-
-  return (
-    <div className="p-4 bg-white rounded-xl shadow-md text-center">
-      <h2 className="font-bold text-xl mb-2">Flashcards - {subject}</h2>
-      <p className="text-lg">{showAnswer ? cards[index].answer : cards[index].question}</p>
-      <div className="mt-4 flex justify-center gap-3">
-        <button onClick={() => setShowAnswer(!showAnswer)} className="bg-blue-600 text-white px-3 py-1 rounded">
-          {showAnswer ? "Show Question" : "Show Answer"}
-        </button>
-        <button onClick={nextCard} className="bg-green-600 text-white px-3 py-1 rounded">
-          Next
-        </button>
-      </div>
-    </div>
-  );
+    { question: "What is a cell?", answer: "The basic unit of life." },
+  ],
+  Chemistry: [
+    { question: "What is an atom?", answer: "The smallest unit of an element." },
+    { question: "What is H2O?", answer: "Water — two hydrogen atoms and one oxygen atom." },
+  ],
+  Nursing: [
+    { question: "What is nursing?", answer: "The care of individuals to maintain or recover health." },
+    { question: "What are vital signs?", answer: "Measurements of the body's most basic functions." },
+  ],
 };
 
-export default Flashcards;
+export default function Flashcards({ subject }) {
+  const cards = flashcards[subject] || [];
+  const [index, setIndex] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+
+  const next = () => {
+    setShowAnswer(false);
+    setIndex((index + 1) % cards.length);
+  };
+
+  if (!cards.length) return <p>No flashcards available for this subject.</p>;
+
+  return (
+    <div className="flashcards">
+      <h2 className="text-lg font-semibold">Flashcards - {subject}</h2>
+      <p className="mt-2">{showAnswer ? cards[index].answer : cards[index].question}</p>
+      <button onClick={() => setShowAnswer(!showAnswer)} className="mt-3 p-2 bg-blue-500 text-white rounded">
+        {showAnswer ? "Hide Answer" : "Show Answer"}
+      </button>
+      <button onClick={next} className="ml-2 p-2 bg-green-500 text-white rounded">
+        Next
+      </button>
+    </div>
+  );
+}
