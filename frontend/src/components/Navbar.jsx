@@ -1,14 +1,32 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
-export default function Navbar({ onSelectPage }) {
+export default function Navbar({ theme, setTheme, setPage }) {
+  const nextTheme = () => {
+    const map = { light: "dark", dark: "colorful", colorful: "light" };
+    setTheme(map[theme]);
+  };
+
   return (
-    <nav className="bg-white/10 backdrop-blur-md p-4 flex justify-between items-center shadow-md">
-      <h1 className="text-2xl font-bold text-cyan-300">FullTask AI Tutor</h1>
-      <ul className="flex space-x-6 text-sm">
-        <li onClick={() => onSelectPage('dashboard')} className="cursor-pointer hover:text-cyan-300">Dashboard</li>
-        <li onClick={() => onSelectPage('chat')} className="cursor-pointer hover:text-cyan-300">AI Chat</li>
-        <li className="cursor-pointer hover:text-cyan-300">About</li>
-      </ul>
+    <nav className="flex items-center justify-between p-4 nav-bg shadow-md sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        <div className="text-2xl font-bold text-cyan-500">FullTask AI</div>
+        <div className="text-sm opacity-80">Biology • Chemistry • Nursing</div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button onClick={() => setPage('dashboard')} className="px-3 py-1 rounded-md hover:opacity-90">Dashboard</button>
+        <button onClick={() => setPage('chat')} className="px-3 py-1 rounded-md hover:opacity-90">Chat</button>
+
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={nextTheme}
+          className="px-3 py-2 rounded-lg button-glass"
+          title="Switch theme (Light / Dark / Colorful)"
+        >
+          Theme: {theme}
+        </motion.button>
+      </div>
     </nav>
   );
 }
