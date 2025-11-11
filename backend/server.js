@@ -1,26 +1,12 @@
-import express from "express";
-import cors from "cors";
-import bodyParser from "body-parser";
-import fetch from "node-fetch"; // if you use native fetch, remove this line
-
-const app = express();
-app.use(cors());
-app.use(bodyParser.json());
-
-app.get("/", (req, res) => {
-  res.send("🧠 FullTask AI Backend running successfully!");
-});
-
 app.post("/ask", async (req, res) => {
   const { subject, question } = req.body;
 
   if (!question) {
-    return res.status(400).json({ error: "No question provided" });
+    return res.status(400).json({ error: "Question required" });
   }
 
   try {
-    // ✨ Connect to OpenAI (replace with your actual API key)
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -29,23 +15,25 @@ app.post("/ask", async (req, res) => {
       body: JSON.stringify({
         model: "gpt-3.5-turbo",
         messages: [
-          { role: "system", content: `You are a professional ${subject} tutor.` },
-          { role: "user", content: question }
+          {
+            role: "system",
+            content: `You are a helpful ${subject} tutor. Answer simply and clearly.`,
+          },
+          { role: "user", content: question },
         ],
       }),
     });
 
-    const data = await response.json();
+    const data = await aiResponse.json();
 
-    res.json({
-      answer: data.choices?.[0]?.message?.content || "No response from AI."
-    });
+    if (!aiResponse.ok) {
+      console.error("OpenAI Error:", data);
+      return res.status(500).json({ error: data.error?.message || "OpenAI error" });
+    }
 
-  } catch (err) {
-    console.error("AI error:", err);
-    res.status(500).json({ error: "AI request failed" });
+    res.json({ answer: data.choices[0].message.content.trim() });
+  } catch (error) {
+    console.error("Backend error:", error);
+    res.status(500).json({ error: "⚠️ Unable to reach OpenAI API." });
   }
 });
-
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
