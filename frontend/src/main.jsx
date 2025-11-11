@@ -1,6 +1,9 @@
-import React from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App.jsx";
-import "./index.css";
-
-createRoot(document.getElementById("root")).render(<App />);
+// after app render
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/service-worker.js').then(
+      function(reg) { console.log('SW registered', reg); },
+      function(err) { console.log('SW reg failed', err); }
+    );
+  });
+}
