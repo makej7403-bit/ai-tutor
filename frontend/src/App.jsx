@@ -1,36 +1,62 @@
-import Quiz from "./pages/Quiz";
-// ... in Routes:
-<Route path="/quiz" element={<Quiz />} />
-import React from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Chat from "./pages/Chat";
-import Biology from "./pages/Biology";
-import Chemistry from "./pages/Chemistry";
-import Nursing from "./pages/Nursing";
-import AuthPage from "./pages/AuthPage";
+import React, { useState } from "react";
+import "./App.css";
+
+const API_URL = import.meta.env.VITE_API_BASE || "https://ai-tutor-e5m3.onrender.com";
 
 export default function App() {
+  const [subject, setSubject] = useState("biology");
+  const [question, setQuestion] = useState("");
+  const [answer, setAnswer] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  async function askAI() {
+    if (!question.trim()) return;
+    setLoading(true);
+    setAnswer("");
+
+    try {
+      const res = await fetch(`${API_URL}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subject, question }),
+      });
+
+      if (!res.ok) throw new Error("Network error");
+
+      const data = await res.json();
+      setAnswer(data.answer || "No answer received");
+    } catch (err) {
+      setAnswer("⚠️ Error connecting to AI tutor.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <BrowserRouter>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-1 container">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chat" element={<Chat />} />
-            <Route path="/biology" element={<Biology />} />
-            <Route path="/chemistry" element={<Chemistry />} />
-            <Route path="/nursing" element={<Nursing />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
-    </BrowserRouter>
+    <div className="app">
+      <header>
+        <h1>🧠 FullTask AI Tutor</h1>
+        <nav>
+          <button onClick={() => setSubject("biology")}>Biology</button>
+          <button onClick={() => setSubject("chemistry")}>Chemistry</button>
+          <button onClick={() => setSubject("nursing")}>Nursing</button>
+        </nav>
+      </header>
+
+      <main>
+        <h2>{subject.toUpperCase()} Tutor</h2>
+        <textarea
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+          placeholder={`Ask any ${subject} question...`}
+        />
+        <button onClick={askAI} disabled={loading}>
+          {loading ? "Thinking..." : "Ask AI"}
+        </button>
+        {answer && <div className="answer-box">{answer}</div>}
+      </main>
+
+      <footer>Powered by FullTask AI | © 2025</footer>
+    </div>
   );
 }
