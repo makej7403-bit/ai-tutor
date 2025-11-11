@@ -1,9 +1,10 @@
-// after app render
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/service-worker.js').then(
-      function(reg) { console.log('SW registered', reg); },
-      function(err) { console.log('SW reg failed', err); }
-    );
-  });
-}
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
