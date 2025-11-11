@@ -1,18 +1,14 @@
-// src/contexts/UserContext.jsx
-import React, { createContext, useEffect, useState } from "react";
-import { auth } from "../firebase";
+import { createContext, useContext, useState } from "react";
 
-export const UserContext = createContext({ user: null });
+const UserContext = createContext();
 
-export function UserProvider({ children }) {
+export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  return (
+    <UserContext.Provider value={{ user, setUser }}>
+      {children}
+    </UserContext.Provider>
+  );
+};
 
-  useEffect(() => {
-    const unsub = auth.onAuthStateChanged((u) => {
-      setUser(u ? { uid: u.uid, displayName: u.displayName, email: u.email, photoURL: u.photoURL } : null);
-    });
-    return () => unsub();
-  }, []);
-
-  return <UserContext.Provider value={{ user }}>{children}</UserContext.Provider>;
-}
+export const useUser = () => useContext(UserContext);
