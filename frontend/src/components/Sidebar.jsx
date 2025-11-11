@@ -1,27 +1,26 @@
 import React from 'react';
 
-export default function Sidebar({ onSelectPage }) {
+export default function Sidebar({ setPage }) {
   return (
-    <aside className="w-60 bg-white/5 p-4 space-y-4 hidden md:block">
-      <button
-        onClick={() => onSelectPage('dashboard')}
-        className="w-full py-2 rounded bg-cyan-600 hover:bg-cyan-700 font-semibold"
-      >
-        Dashboard
-      </button>
-      <button
-        onClick={() => onSelectPage('chat')}
-        className="w-full py-2 rounded bg-purple-600 hover:bg-purple-700 font-semibold"
-      >
-        AI Chat
-      </button>
-      <div className="mt-8 text-gray-300 text-sm">
-        <p>Subjects</p>
-        <ul className="space-y-1 mt-2">
-          <li>Biology</li>
-          <li>Chemistry</li>
-          <li>Nursing</li>
-        </ul>
+    <aside className="w-72 p-4 hidden lg:block">
+      <div className="space-y-4">
+        <div className="card-bg p-4 rounded-2xl shadow-lg">
+          <h3 className="font-bold text-lg">Welcome</h3>
+          <p className="text-sm opacity-80 mt-2">Choose a subject or jump to Chat.</p>
+          <div className="mt-4 grid grid-cols-1 gap-2">
+            <button onClick={()=>setPage('dashboard')} className="py-2 rounded-md bg-cyan-600 text-white">Open Dashboard</button>
+            <button onClick={()=>setPage('chat')} className="py-2 rounded-md bg-purple-600 text-white">Open AI Chat</button>
+          </div>
+        </div>
+
+        <div className="card-bg p-4 rounded-2xl shadow-lg">
+          <h4 className="font-semibold mb-2">Subjects</h4>
+          <ul className="space-y-2 text-sm">
+            <li>Biology — Anatomy & Physiology</li>
+            <li>Chemistry — Organic & Inorganic</li>
+            <li>Nursing — Clinical basics</li>
+          </ul>
+        </div>
       </div>
     </aside>
   );
