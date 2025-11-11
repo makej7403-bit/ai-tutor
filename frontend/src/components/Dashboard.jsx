@@ -1,24 +1,107 @@
-import React from 'react';
-import SubjectCard from './SubjectCard.jsx';
+import React, { useState } from "react";
+import { FaFlask, FaDna, FaStethoscope, FaRobot, FaVolumeUp } from "react-icons/fa";
 
 export default function Dashboard() {
-  const subjects = [
-    { title: 'Biology', desc: 'Anatomy, cells, genetics, ecology', colorFrom: 'from-green-400', colorTo: 'to-green-600' },
-    { title: 'Chemistry', desc: 'Atoms, bonds, reactions', colorFrom: 'from-blue-400', colorTo: 'to-indigo-600' },
-    { title: 'Nursing', desc: 'Patient care, pharmacology basics', colorFrom: 'from-pink-400', colorTo: 'to-purple-600' }
+  const [activeTab, setActiveTab] = useState("biology");
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+
+  const handleSend = async () => {
+    if (!input.trim()) return;
+
+    const newMessage = { sender: "user", text: input };
+    setMessages((prev) => [...prev, newMessage]);
+    setInput("");
+
+    // 🧠 Call OpenAI API (replace `YOUR_API_KEY` with actual key or env var)
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are a professional AI tutor specialized in ${activeTab} for nursing and science students. Provide accurate, clear, and educational explanations.`,
+          },
+          { role: "user", content: input },
+        ],
+      }),
+    });
+
+    const data = await res.json();
+    const aiMessage = data.choices?.[0]?.message?.content || "Sorry, I couldn’t find an answer.";
+
+    setMessages((prev) => [...prev, { sender: "ai", text: aiMessage }]);
+  };
+
+  const handleReadAloud = (text) => {
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.rate = 1;
+    speech.pitch = 1;
+    speech.lang = "en-US";
+    window.speechSynthesis.speak(speech);
+  };
+
+  const tabs = [
+    { key: "biology", label: "🧬 Biology", icon: <FaDna /> },
+    { key: "chemistry", label: "⚗️ Chemistry", icon: <FaFlask /> },
+    { key: "nursing", label: "💉 Nursing", icon: <FaStethoscope /> },
+    { key: "ai", label: "🤖 AI Tutor", icon: <FaRobot /> },
   ];
 
   return (
-    <div className="space-y-6">
-      <header className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold">Dashboard</h2>
-          <p className="text-sm opacity-80">Pick a subject to start learning</p>
+    <div className="dashboard">
+      {/* 🌟 Top Navbar */}
+      <div className="navbar">
+        <h1>FullTask AI - Science & Nursing Hub</h1>
+        <div className="menu">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`menu-btn ${activeTab === tab.key ? "active" : ""}`}
+            >
+              {tab.icon} {tab.label}
+            </button>
+          ))}
         </div>
-      </header>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {subjects.map((s) => <SubjectCard key={s.title} {...s} />)}
+      {/* 💬 Chat Section */}
+      <div className="chatbox">
+        <div className="chat-messages">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`message ${msg.sender === "user" ? "user" : "ai"}`}
+            >
+              <p>{msg.text}</p>
+              {msg.sender === "ai" && (
+                <button
+                  className="read-btn"
+                  onClick={() => handleReadAloud(msg.text)}
+                >
+                  <FaVolumeUp />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <div className="chat-input">
+          <input
+            type="text"
+            placeholder={`Ask anything about ${activeTab}...`}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          />
+          <button onClick={handleSend}>Send</button>
+        </div>
       </div>
     </div>
   );
