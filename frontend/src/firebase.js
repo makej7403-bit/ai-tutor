@@ -1,32 +1,57 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "firebase/firestore";
+import { 
+  getAuth, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signOut 
+} from "firebase/auth";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  query, 
+  where, 
+  getDocs, 
+  orderBy 
+} from "firebase/firestore";
 
-// Vite env variables (set these in Render or .env.local)
+// ✅ Your Firebase configuration
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
+  authDomain: "fir-u-c-students-web.firebaseapp.com",
+  databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
+  projectId: "fir-u-c-students-web",
+  storageBucket: "fir-u-c-students-web.firebasestorage.app",
+  messagingSenderId: "113569186739",
+  appId: "1:113569186739:web:d8daf21059f43a79e841c6"
 };
 
+// Initialize Firebase app
 const app = initializeApp(firebaseConfig);
+
+// Export Firebase modules
 export const auth = getAuth(app);
 export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 
-// helper functions
+// --- 🔐 Authentication helpers ---
 export async function signInWithGoogle() {
-  return signInWithPopup(auth, provider);
+  try {
+    const result = await signInWithPopup(auth, provider);
+    console.log("✅ Signed in:", result.user.displayName);
+    return result.user;
+  } catch (error) {
+    console.error("❌ Sign-in failed:", error);
+    throw error;
+  }
 }
+
 export function signOutUser() {
   return signOut(auth);
 }
 
-// save Q/A to Firestore under collection "histories"
+// --- 💾 Firestore: Save and Load History ---
 export async function saveHistory(uid, subject, question, answer) {
   if (!uid) return null;
   const col = collection(db, "histories");
@@ -37,11 +62,11 @@ export async function saveHistory(uid, subject, question, answer) {
     answer,
     ts: Date.now(),
   });
+  console.log("✅ History saved:", doc.id);
   return doc.id;
 }
 
-// fetch last N histories for a user
-export async function loadHistory(uid, limit = 50) {
+export async function loadHistory(uid) {
   if (!uid) return [];
   const histCol = collection(db, "histories");
   const q = query(histCol, where("uid", "==", uid), orderBy("ts", "desc"));
