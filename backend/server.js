@@ -1,67 +1,51 @@
-// server.js
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 
 const app = express();
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// ✅ AI Tutor route
-app.post("/api/ask", async (req, res) => {
-  try {
-    const { subject, question } = req.body;
-    const apiKey = process.env.OPENAI_API_KEY;
-
-    if (!question || !subject) {
-      return res.status(400).json({ error: "Please provide both subject and question." });
-    }
-
-    if (!apiKey) {
-      console.error("❌ No OpenAI API key found!");
-      return res.status(500).json({ error: "OpenAI API key missing on server." });
-    }
-
-    // ✅ Send the request to OpenAI API
-    const aiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [
-          {
-            role: "system",
-            content: `You are a friendly and expert ${subject} tutor. Explain concepts clearly and accurately.`,
-          },
-          { role: "user", content: question },
-        ],
-      }),
-    });
-
-    const data = await aiResponse.json();
-
-    if (data.error) {
-      console.error("OpenAI Error:", data.error);
-      return res.status(500).json({ error: data.error.message });
-    }
-
-    const answer = data.choices?.[0]?.message?.content?.trim() || "No response from AI.";
-    res.json({ answer });
-
-  } catch (err) {
-    console.error("❌ Server Error:", err);
-    res.status(500).json({ error: "AI failed to respond." });
-  }
-});
-
-// ✅ Root route (Render health check)
+// ✅ Test route
 app.get("/", (req, res) => {
   res.send("🧠 FullTask AI Backend running successfully!");
 });
 
-// ✅ Port
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`✅ FullTask AI backend running on port ${PORT}`));
+// ✅ Main AI Tutor endpoint
+app.post("/api/ask", async (req, res) => {
+  const { question } = req.body;
+
+  if (!question) {
+    return res.status(400).json({ error: "No question provided." });
+  }
+
+  try {
+    // 🔑 Replace this with your real OpenAI API key
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [
+          { role: "system", content: "You are FullTask AI Tutor, a helpful educational assistant." },
+          { role: "user", content: question }
+        ]
+      })
+    });
+
+    const data = await response.json();
+    const answer = data.choices?.[0]?.message?.content || "No answer received.";
+    res.json({ answer });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to connect to OpenAI." });
+  }
+});
+
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
