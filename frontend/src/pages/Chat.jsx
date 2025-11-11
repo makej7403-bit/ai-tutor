@@ -1,19 +1,43 @@
 import React, { useEffect, useRef, useState } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { saveChat, loadChat, saveProgress } from "../firestore";
 import { API_BASE } from "../config/api";
 import { FaVolumeUp, FaMicrophone, FaCopy } from "react-icons/fa";
 
 export default function Chat(){
   const [input, setInput] = useState("");
-  const [messages, setMessages] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("ft_chat")) || []; } catch { return []; }
-  });
+  const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
   const messagesRef = useRef(null);
 
   useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u) {
+        // load saved chat from Firestore
+        loadChat(u.uid).then(saved => {
+          if (saved && saved.length) setMessages(saved);
+        }).catch(()=>{});
+      } else {
+        // load localStorage fallback
+        try {
+          const local = JSON.parse(localStorage.getItem("ft_chat") || "[]");
+          setMessages(local);
+        } catch { }
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    // persist locally always
     localStorage.setItem("ft_chat", JSON.stringify(messages));
-    messagesRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    // also persist to Firestore for signed-in users
+    if (user) saveChat(user.uid, "default", messages).catch(()=>{});
+    messagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, user]);
 
   const send = async () => {
     if (!input.trim()) return;
@@ -36,7 +60,14 @@ export default function Chat(){
 
       const data = await res.json();
       const aiText = data.reply || data.answer || "No answer";
-      setMessages(prev => [...prev, { role: "assistant", text: aiText, ts: Date.now() }]);
+      const aiMsg = { role: "assistant", text: aiText, ts: Date.now() };
+      setMessages(prev => [...prev, aiMsg]);
+
+      // optionally update progress: crude example increment
+      if (user) {
+        // you can implement more intelligent progress updates (per subject, correctness, quizzes)
+        saveProgress(user.uid, { lastInteraction: new Date().toISOString() }).catch(()=>{});
+      }
     } catch (err) {
       console.error(err);
       setMessages(prev => [...prev, { role: "assistant", text: "Server error. Try again later." }]);
@@ -45,7 +76,6 @@ export default function Chat(){
     }
   };
 
-  // read aloud
   const speak = (text) => {
     if (!("speechSynthesis" in window)) return alert("Speech not supported");
     const u = new SpeechSynthesisUtterance(text);
@@ -53,17 +83,16 @@ export default function Chat(){
     window.speechSynthesis.speak(u);
   };
 
-  // copy
   const copyText = async (t) => {
     await navigator.clipboard.writeText(t);
-    // small visual feedback
-    alert("Copied to clipboard");
+    // use small toast UI later — for now alert
+    alert("Copied");
   };
 
-  // voice input (basic stub)
+  // voice input (basic)
   const voiceInput = async () => {
     if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      return alert("Speech Recognition not supported in this browser");
+      return alert("Speech Recognition not supported");
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SpeechRecognition();
