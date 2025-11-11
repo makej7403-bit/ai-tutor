@@ -1,32 +1,26 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
 
-export default function Navbar({ theme, setTheme, setPage }) {
-  const nextTheme = () => {
-    const map = { light: "dark", dark: "colorful", colorful: "light" };
-    setTheme(map[theme]);
-  };
-
+export default function Navbar(){
+  const loc = useLocation();
   return (
-    <nav className="flex items-center justify-between p-4 nav-bg shadow-md sticky top-0 z-30">
-      <div className="flex items-center gap-3">
-        <div className="text-2xl font-bold text-cyan-500">FullTask AI</div>
-        <div className="text-sm opacity-80">Biology • Chemistry • Nursing</div>
-      </div>
+    <header className="navbar shadow-sm p-3">
+      <div className="container flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link to="/" className="text-xl font-bold text-sky-600">FullTask AI Tutor</Link>
+          <nav className="hidden md:flex gap-3 text-sm text-gray-700">
+            <Link to="/biology" className={loc.pathname.startsWith('/biology') ? 'font-semibold' : ''}>Biology</Link>
+            <Link to="/chemistry" className={loc.pathname.startsWith('/chemistry') ? 'font-semibold' : ''}>Chemistry</Link>
+            <Link to="/nursing" className={loc.pathname.startsWith('/nursing') ? 'font-semibold' : ''}>Nursing</Link>
+            <Link to="/dashboard">Dashboard</Link>
+          </nav>
+        </div>
 
-      <div className="flex items-center gap-3">
-        <button onClick={() => setPage('dashboard')} className="px-3 py-1 rounded-md hover:opacity-90">Dashboard</button>
-        <button onClick={() => setPage('chat')} className="px-3 py-1 rounded-md hover:opacity-90">Chat</button>
-
-        <motion.button
-          whileTap={{ scale: 0.95 }}
-          onClick={nextTheme}
-          className="px-3 py-2 rounded-lg button-glass"
-          title="Switch theme (Light / Dark / Colorful)"
-        >
-          Theme: {theme}
-        </motion.button>
+        <div className="flex items-center gap-3">
+          <Link to="/chat" className="px-3 py-2 rounded-md bg-sky-600 text-white">AI Chat</Link>
+          <Link to="/auth" className="px-3 py-2 rounded-md border">Login</Link>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 }
