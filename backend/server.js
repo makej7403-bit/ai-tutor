@@ -1,33 +1,25 @@
 // server.js
 import express from "express";
-import fetch from "node-fetch";
 import cors from "cors";
+import fetch from "node-fetch";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ Root route (for Render health check)
-app.get("/", (req, res) => {
-  res.send("🧠 FullTask AI Backend running successfully!");
-});
-
 // ✅ AI Tutor route
-app.post("/ask", async (req, res) => {
-  const { subject, question } = req.body;
-
-  if (!question || !subject) {
-    return res.status(400).json({ error: "Please provide both subject and question." });
-  }
-
+app.post("/api/ask", async (req, res) => {
   try {
-    // ✅ Make sure OPENAI_API_KEY is properly set in Render Environment Variables
+    const { subject, question } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!question || !subject) {
+      return res.status(400).json({ error: "Please provide both subject and question." });
+    }
+
     if (!apiKey) {
       console.error("❌ No OpenAI API key found!");
-      return res.status(500).json({
-        error: "OpenAI API key missing on server. Please configure environment variable.",
-      });
+      return res.status(500).json({ error: "OpenAI API key missing on server." });
     }
 
     // ✅ Send the request to OpenAI API
@@ -42,34 +34,34 @@ app.post("/ask", async (req, res) => {
         messages: [
           {
             role: "system",
-            content: `You are a smart, friendly AI tutor specializing in ${subject}. Give accurate, simple explanations for nursing, biology, chemistry, and medical questions.`,
+            content: `You are a friendly and expert ${subject} tutor. Explain concepts clearly and accurately.`,
           },
           { role: "user", content: question },
         ],
-        temperature: 0.7,
       }),
     });
 
     const data = await aiResponse.json();
 
-    // ✅ Handle any API error gracefully
-    if (!aiResponse.ok) {
-      console.error("OpenAI API Error:", data);
-      return res.status(500).json({
-        error: data.error?.message || "OpenAI API returned an error.",
-      });
+    if (data.error) {
+      console.error("OpenAI Error:", data.error);
+      return res.status(500).json({ error: data.error.message });
     }
 
-    const aiAnswer = data.choices?.[0]?.message?.content?.trim() || "No response from AI.";
-    res.json({ answer: aiAnswer });
-  } catch (error) {
-    console.error("❌ Server Error:", error);
-    res.status(500).json({ error: "Internal server error connecting to AI." });
+    const answer = data.choices?.[0]?.message?.content?.trim() || "No response from AI.";
+    res.json({ answer });
+
+  } catch (err) {
+    console.error("❌ Server Error:", err);
+    res.status(500).json({ error: "AI failed to respond." });
   }
 });
 
-// ✅ Port (Render automatically sets process.env.PORT)
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-  console.log(`✅ FullTask AI backend running on port ${PORT}`);
+// ✅ Root route (Render health check)
+app.get("/", (req, res) => {
+  res.send("🧠 FullTask AI Backend running successfully!");
 });
+
+// ✅ Port
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ FullTask AI backend running on port ${PORT}`));
