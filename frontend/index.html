@@ -1,12 +1,120 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>FullTask AI Tutor</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧠 FullTask AI Tutor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #222;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    header {
+      background: #0056ff;
+      color: white;
+      padding: 15px;
+      font-size: 1.5em;
+    }
+    main {
+      max-width: 600px;
+      margin: 40px auto;
+      background: white;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    select, input, button {
+      margin: 8px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      width: 90%;
+      font-size: 1em;
+    }
+    button {
+      background: #0056ff;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #003ecf;
+    }
+    #response {
+      background: #eef2ff;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 15px;
+      text-align: left;
+    }
+    footer {
+      margin-top: 50px;
+      padding: 10px;
+      font-size: 0.9em;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+  <header>📘 FullTask AI Tutor</header>
+
+  <main>
+    <h2>Ask anything — AI will answer instantly!</h2>
+    <label>Choose Subject:</label><br>
+    <select id="subject">
+      <option>Biology</option>
+      <option>Chemistry</option>
+      <option>Physics</option>
+      <option>Mathematics</option>
+      <option>Nursing</option>
+      <option>English</option>
+    </select><br>
+
+    <input id="question" placeholder="Type your question..." />
+    <button onclick="askAI()">Ask AI</button>
+
+    <div id="response">AI Response will appear here...</div>
+  </main>
+
+  <footer>© 2025 FullTask AI Tutor | Powered by Akin S. Sokpah | Backend: 
+    <a href="https://ai-tutor-e5m3.onrender.com" target="_blank">https://ai-tutor-e5m3.onrender.com</a>
+  </footer>
+
+  <script>
+  const API_URL = "https://ai-tutor-e5m3.onrender.com/api/ask";
+
+  async function askAI() {
+    const subject = document.getElementById("subject").value;
+    const question = document.getElementById("question").value.trim();
+    const responseBox = document.getElementById("response");
+
+    if (!question) {
+      responseBox.textContent = "Please type a question.";
+      return;
+    }
+
+    responseBox.textContent = "Thinking... 🤔";
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: `${subject}: ${question}` })
+      });
+
+      if (!res.ok) throw new Error("Bad response from server");
+
+      const data = await res.json();
+      responseBox.textContent = data.answer || "⚠️ No answer received.";
+    } catch (err) {
+      console.error(err);
+      responseBox.textContent = "⚠️ Unable to connect to AI Tutor. Try again later.";
+    }
+  }
+  </script>
+</body>
 </html>
