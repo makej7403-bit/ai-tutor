@@ -1,68 +1,38 @@
 import React, { useState } from "react";
-import { generateQuiz } from "../api";
 
-export default function Quiz(){
-  const [subject, setSubject] = useState("Biology");
-  const [topic, setTopic] = useState("");
-  const [quiz, setQuiz] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [answers, setAnswers] = useState({});
-  const [result, setResult] = useState(null);
+const sampleQuiz = {
+  Biology: [
+    { q: "What is the powerhouse of the cell?", a: "Mitochondria" },
+    { q: "What carries oxygen in blood?", a: "Hemoglobin" },
+  ],
+};
 
-  async function handleGenerate(){
-    setLoading(true);
-    setQuiz([]);
-    setResult(null);
-    try {
-      const data = await generateQuiz({ subject, topic, num:5 });
-      // if backend returned stringly JSON from model, try parse
-      const parsed = typeof data.quiz === "string" ? JSON.parse(data.quiz) : data.quiz;
-      setQuiz(parsed);
-    } catch (err) {
-      console.error(err);
-      alert("Quiz generation failed.");
-    } finally { setLoading(false); }
-  }
+export default function Quiz({ subject }) {
+  const quiz = sampleQuiz[subject] || [];
+  const [index, setIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [answer, setAnswer] = useState("");
+  const [done, setDone] = useState(false);
 
-  function submit(){
-    let score=0;
-    quiz.forEach((q,i)=>{
-      if (Number(answers[i]) === Number(q.answerIndex)) score++;
-    });
-    setResult({score, total: quiz.length});
-  }
+  const check = () => {
+    if (answer.trim().toLowerCase() === quiz[index].a.toLowerCase()) setScore(score + 1);
+    if (index + 1 === quiz.length) setDone(true);
+    else setIndex(index + 1);
+    setAnswer("");
+  };
+
+  if (!quiz.length) return <p>No quiz yet for {subject}</p>;
 
   return (
-    <div>
-      <div className="card">
-        <h3>AI Quiz Generator</h3>
-        <div style={{display:"flex", gap:8}}>
-          <select value={subject} onChange={e=>setSubject(e.target.value)}>{["Biology","Chemistry","Nursing"].map(s=><option key={s}>{s}</option>)}</select>
-          <input placeholder="Topic (optional)" value={topic} onChange={e=>setTopic(e.target.value)} />
-          <button onClick={handleGenerate} disabled={loading}>{loading? "..." : "Generate Quiz"}</button>
-        </div>
-      </div>
-
-      {quiz && quiz.length>0 && (
-        <div className="card">
-          {quiz.map((q, i) => (
-            <div key={i} style={{ marginBottom:10 }}>
-              <div><strong>{i+1}. {q.q}</strong></div>
-              <div style={{ marginTop:6 }}>
-                {q.choices.map((c,j)=>(
-                  <label key={j} style={{ display:"block" }}>
-                    <input type="radio" name={`q${i}`} value={j} onChange={()=>setAnswers(a=>({...a,[i]:j}))} />
-                    {" "}{c}
-                  </label>
-                ))}
-              </div>
-            </div>
-          ))}
-          <div>
-            <button onClick={submit}>Submit Quiz</button>
-            {result && <div style={{marginTop:8}}>Score: {result.score}/{result.total}</div>}
-          </div>
-        </div>
+    <div className="p-4 border mt-3 rounded-lg">
+      {!done ? (
+        <>
+          <h3>{quiz[index].q}</h3>
+          <input value={answer} onChange={(e) => setAnswer(e.target.value)} className="border p-2 mt-2 rounded" />
+          <button onClick={check} className="ml-2 bg-blue-600 text-white px-3 py-1 rounded">Submit</button>
+        </>
+      ) : (
+        <h3>Your score: {score}/{quiz.length}</h3>
       )}
     </div>
   );
