@@ -1,30 +1,30 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
-import Home from "./pages/Home";
-import Biology from "./pages/Biology";
-import Chemistry from "./pages/Chemistry";
-import Nursing from "./pages/Nursing";
+import React, { useState } from 'react';
+import Navbar from './components/Navbar.jsx';
+import Sidebar from './components/Sidebar.jsx';
+import Dashboard from './components/Dashboard.jsx';
+import Chat from './components/Chat.jsx';
 
-export default function App(){
+export default function App() {
+  const [activePage, setActivePage] = useState('dashboard');
+
+  const renderPage = () => {
+    switch (activePage) {
+      case 'dashboard':
+        return <Dashboard />;
+      case 'chat':
+        return <Chat />;
+      default:
+        return <Dashboard />;
+    }
+  };
+
   return (
-    <BrowserRouter>
-      <div className="min-h-screen">
-        <nav className="bg-white shadow p-4 flex gap-4">
-          <Link to="/" className="font-bold">FullTask AI Tutor</Link>
-          <Link to="/biology">Biology</Link>
-          <Link to="/chemistry">Chemistry</Link>
-          <Link to="/nursing">Nursing</Link>
-        </nav>
-
-        <main className="p-6">
-          <Routes>
-            <Route path="/" element={<Home/>}/>
-            <Route path="/biology" element={<Biology/>}/>
-            <Route path="/chemistry" element={<Chemistry/>}/>
-            <Route path="/nursing" element={<Nursing/>}/>
-          </Routes>
-        </main>
+    <div className="flex flex-col h-screen">
+      <Navbar onSelectPage={setActivePage} />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar onSelectPage={setActivePage} />
+        <main className="flex-1 p-6 overflow-y-auto">{renderPage()}</main>
       </div>
-    </BrowserRouter>
+    </div>
   );
 }
