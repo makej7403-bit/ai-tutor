@@ -1,55 +1,126 @@
+/* Base */
 body {
-  font-family: 'Poppins', sans-serif;
-  background: linear-gradient(120deg, #002f4b, #dc4225);
-  color: white;
   margin: 0;
-  padding: 0;
-  text-align: center;
+  font-family: 'Poppins', sans-serif;
+  background: #f7f9fc;
+  color: #333;
 }
 
-.app {
-  padding: 40px;
+/* Dashboard layout */
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.sidebar {
+  width: 220px;
+  background: #0a2540;
+  color: white;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+}
+
+.sidebar h2 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.sidebar button {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 10px 15px;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 15px;
+  transition: background 0.3s;
+}
+
+.sidebar button:hover,
+.sidebar button.active {
+  background: #2563eb;
+}
+
+.main-area {
+  flex: 1;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
 header h1 {
-  font-size: 2rem;
+  color: #0a2540;
+  margin-bottom: 8px;
+}
+
+.chat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.chat-box textarea {
+  width: 80%;
+  height: 120px;
+  border: 2px solid #2563eb;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 16px;
+  resize: none;
+  outline: none;
+}
+
+.chat-box button {
+  margin-top: 15px;
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 10px 25px;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.chat-box button:hover {
+  background: #1e40af;
+}
+
+.response {
+  margin-top: 30px;
+  padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ai-response h3 {
+  color: #0a2540;
   margin-bottom: 10px;
 }
 
-nav button {
-  margin: 0 5px;
-  background: white;
-  color: #333;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
+.placeholder {
+  color: #888;
+  text-align: center;
 }
 
-textarea {
-  width: 90%;
-  height: 100px;
-  margin-top: 20px;
-  border-radius: 8px;
-  padding: 10px;
-  border: none;
-  font-size: 1rem;
-}
-
-button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  font-size: 1rem;
-  background: #fff;
-  color: #000;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-}
-
-.answer-box {
-  margin-top: 20px;
+footer {
+  margin-top: auto;
+  text-align: center;
   padding: 15px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 10px;
+  color: #666;
+  font-size: 14px;
 }
