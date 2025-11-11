@@ -1,57 +1,50 @@
+// src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { getFirestore, collection, addDoc, query, where, getDocs, orderBy } from "firebase/firestore";
 
-// You provided these keys earlier; safe to keep client-side for Firebase Auth.
-// If you prefer, move these to Vite env vars and reference import.meta.env.VITE_FIREBASE_...
+// Vite env variables (set these in Render or .env.local)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "fir-u-c-students-web.firebaseapp.com",
-  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL || "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "fir-u-c-students-web",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "fir-u-c-students-web.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "113569186739",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:113569186739:web:d8daf21059f43a79e841c6"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+export const provider = new GoogleAuthProvider();
 export const db = getFirestore(app);
-export default app;
 
-import { db } from "./firebase";
-import { doc, setDoc, getDoc, collection, addDoc, getDocs, query, orderBy } from "firebase/firestore";
-
-/**
- * Save chat message list for a user (overwrites)
- * path: users/{uid}/chats/{chatId}  (chatId can be 'default')
- */
-export async function saveChat(uid, chatId = "default", messages = []) {
-  if (!uid) return;
-  const docRef = doc(db, "users", uid, "chats", chatId);
-  await setDoc(docRef, { messages, updatedAt: new Date().toISOString() });
+// helper functions
+export async function signInWithGoogle() {
+  return signInWithPopup(auth, provider);
+}
+export function signOutUser() {
+  return signOut(auth);
 }
 
-/** Load chat */
-export async function loadChat(uid, chatId = "default") {
+// save Q/A to Firestore under collection "histories"
+export async function saveHistory(uid, subject, question, answer) {
   if (!uid) return null;
-  const docRef = doc(db, "users", uid, "chats", chatId);
-  const snap = await getDoc(docRef);
-  return snap.exists() ? snap.data().messages : [];
+  const col = collection(db, "histories");
+  const doc = await addDoc(col, {
+    uid,
+    subject,
+    question,
+    answer,
+    ts: Date.now(),
+  });
+  return doc.id;
 }
 
-/** Save progress object {subject: {score, completed}} */
-export async function saveProgress(uid, progress) {
-  if (!uid) return;
-  const docRef = doc(db, "users", uid, "meta", "progress");
-  await setDoc(docRef, { progress, updatedAt: new Date().toISOString() });
-}
-
-/** Load progress */
-export async function loadProgress(uid) {
-  if (!uid) return {};
-  const docRef = doc(db, "users", uid, "meta", "progress");
-  const snap = await getDoc(docRef);
-  return snap.exists() ? snap.data().progress : {};
+// fetch last N histories for a user
+export async function loadHistory(uid, limit = 50) {
+  if (!uid) return [];
+  const histCol = collection(db, "histories");
+  const q = query(histCol, where("uid", "==", uid), orderBy("ts", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
