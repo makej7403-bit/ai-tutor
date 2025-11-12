@@ -1,69 +1,48 @@
-// 🧠 FullTask AI Tutor Backend
-// By Akin S. Sokpah (Liberia)
-
 import express from "express";
 import cors from "cors";
 import fetch from "node-fetch";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-
-// Allow requests from your frontend
-app.use(cors({ origin: ["https://ai-tutor-1-yv0c.onrender.com", "*"] }));
 app.use(express.json());
+app.use(cors());
 
-// Root route (for Render check)
+// ✅ Root check
 app.get("/", (req, res) => {
-  res.send("🧠 FullTask AI Tutor backend is running successfully!");
+  res.send("🧠 FullTask AI Backend running successfully!");
 });
 
-// AI Response Route
+// ✅ AI endpoint
 app.post("/api/ask", async (req, res) => {
   const { question, subject } = req.body;
 
-  if (!question) {
-    return res.status(400).json({ error: "Missing question" });
-  }
+  if (!question) return res.status(400).json({ error: "No question provided" });
 
   try {
-    // 👉 Replace below with your real OpenAI or HuggingFace endpoint
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Example: using a realistic public AI endpoint (can replace with OpenAI key)
+    const aiRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.MISTRAL_API_KEY}`, // or your OpenAI key
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "mistral-small-latest",
         messages: [
-          {
-            role: "system",
-            content: `You are Akin S. Sokpah’s FullTask AI Tutor. 
-            You teach ${subject} with kindness, clarity, and helpful examples. 
-            Always respond clearly and concisely.`,
-          },
+          { role: "system", content: `You are FullTask AI Tutor for ${subject}` },
           { role: "user", content: question },
         ],
       }),
     });
 
-    const data = await openaiResponse.json();
+    const data = await aiRes.json();
+    const answer = data.choices?.[0]?.message?.content || "No answer from AI.";
 
-    if (!data.choices || !data.choices[0]) {
-      throw new Error("Invalid AI response");
-    }
-
-    const answer = data.choices[0].message.content.trim();
     res.json({ answer });
-  } catch (error) {
-    console.error("AI Error:", error);
-    res.status(500).json({
-      error: "Failed to fetch AI response. Please try again later.",
-    });
+  } catch (err) {
+    console.error("Error:", err);
+    res.status(500).json({ error: "AI service unavailable." });
   }
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
