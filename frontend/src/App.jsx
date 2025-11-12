@@ -1,79 +1,96 @@
 import React, { useState } from "react";
-import { UserProvider, useUser } from "./contexts/UserContext";
-import { signInWithGoogle, signOutUser } from "./firebase";
 import "./App.css";
+import { initializeApp } from "firebase/app";
+import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 
-function TutorApp() {
-  const { user, setUser } = useUser();
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
+  authDomain: "fir-u-c-students-web.firebaseapp.com",
+  databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
+  projectId: "fir-u-c-students-web",
+  storageBucket: "fir-u-c-students-web.firebasestorage.app",
+  messagingSenderId: "113569186739",
+  appId: "1:113569186739:web:d8daf21059f43a79e841c6",
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+const App = () => {
   const [subject, setSubject] = useState("Biology");
   const [question, setQuestion] = useState("");
   const [response, setResponse] = useState("");
+  const [speaking, setSpeaking] = useState(false);
 
-  async function askTutor() {
-    if (!question.trim()) return;
+  const askTutor = async () => {
+    if (question.trim() === "") return;
+    if (question.toLowerCase().includes("who created you")) {
+      setResponse("I was created by Akin S. Sokpah from Liberia.");
+      speak("I was created by Akin S. Sokpah from Liberia.");
+      return;
+    }
+
+    setResponse("Thinking...");
     try {
-      const res = await fetch("https://ai-tutor-e5m3.onrender.com/api/ask", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, question }),
-      });
+      const res = await fetch(`https://ai-tutor-e5m3.onrender.com/api/ask?subject=${subject}&q=${encodeURIComponent(question)}`);
       const data = await res.json();
-      setResponse(data.answer || "No response received.");
+      setResponse(data.answer || "⚠️ Unable to connect to AI Tutor.");
+      speak(data.answer || "Unable to connect to AI Tutor.");
     } catch (err) {
-      setResponse("⚠️ Unable to connect to AI Tutor. Try again later.");
+      setResponse("⚠️ Network error. Try again later.");
     }
-  }
+  };
 
-  async function handleSignIn() {
-    try {
-      const u = await signInWithGoogle();
-      setUser(u);
-    } catch (e) {
-      alert("Sign-in failed. Please try again.");
-    }
-  }
+  const speak = (text) => {
+    if (!window.speechSynthesis) return;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+  };
 
   return (
     <div className="app">
-      <h1>📘 FullTask AI Tutor</h1>
+      <header className="header">
+        <h1>📘 FullTask AI Tutor</h1>
+        <p>Learn interactively with reading aloud and realistic background!</p>
+      </header>
 
-      <div className="subject-menu">
-        {["Biology", "Chemistry", "Physics", "Mathematics", "Nursing", "English"].map((s) => (
-          <button key={s} onClick={() => setSubject(s)} className={subject === s ? "active" : ""}>
-            {s}
-          </button>
-        ))}
-      </div>
+      <nav className="menu">
+        <button onClick={() => setSubject("Biology")}>Biology</button>
+        <button onClick={() => setSubject("Chemistry")}>Chemistry</button>
+        <button onClick={() => setSubject("Physics")}>Physics</button>
+        <button onClick={() => setSubject("Mathematics")}>Mathematics</button>
+        <button onClick={() => setSubject("English")}>English</button>
+        <button onClick={() => setSubject("Nursing")}>Nursing</button>
+      </nav>
 
-      <h2>🧠 Ask anything about <b>{subject}</b></h2>
-      <textarea
-        placeholder="Type your question..."
-        value={question}
-        onChange={(e) => setQuestion(e.target.value)}
-      />
-      <button onClick={askTutor}>Ask AI</button>
+      <section className="ai-section">
+        <h2>🧠 Ask anything about {subject}</h2>
+        <textarea
+          placeholder="Type your question..."
+          value={question}
+          onChange={(e) => setQuestion(e.target.value)}
+        />
+        <button onClick={askTutor}>Ask AI</button>
 
-      <h3>AI Response:</h3>
-      <div className="response">{response}</div>
-
-      {!user ? (
-        <button className="signin" onClick={handleSignIn}>Sign in with Google</button>
-      ) : (
-        <div className="user-info">
-          <p>👋 Hello, {user.displayName}</p>
-          <button onClick={() => signOutUser().then(() => setUser(null))}>Logout</button>
+        <div className="response-box">
+          <h3>AI Response:</h3>
+          <p>{response}</p>
         </div>
-      )}
+        {speaking && <p className="speaking">🔊 Reading aloud...</p>}
+      </section>
 
-      <footer>© 2025 FullTask AI Tutor | Powered by Akin S. Sokpah | Backend: <a href="https://ai-tutor-e5m3.onrender.com">ai-tutor-e5m3.onrender.com</a></footer>
+      <footer>
+        © 2025 FullTask AI Tutor | Created by <strong>Akin S. Sokpah</strong> | Backend:{" "}
+        <a href="https://ai-tutor-e5m3.onrender.com/">AI Tutor API</a>
+      </footer>
     </div>
   );
-}
+};
 
-export default function App() {
-  return (
-    <UserProvider>
-      <TutorApp />
-    </UserProvider>
-  );
-}
+export default App;
