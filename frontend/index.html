@@ -1,59 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FullTask AI Tutor</title>
-    <link rel="stylesheet" href="/styles.css" />
-  </head>
-  <body>
-    <header>
-      <h1>🧠 FullTask AI Tutor</h1>
-      <p class="subjects">Biology • Chemistry • Physics • Math • Nursing • English</p>
-      <div class="profile">
-        <img src="your-profile-image.jpg" alt="Akin Saye Sokpah" class="avatar" />
-        <span class="name">Akin Saye Sokpah</span>
-        <button id="signout">Sign out</button>
-      </div>
-    </header>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧠 FullTask AI Tutor</title>
+<style>
+  body {
+    font-family: "Poppins", sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    background: linear-gradient(135deg, #b993d6, #8ca6db);
+    color: #fff;
+  }
 
-    <main>
-      <section class="chat-container">
-        <h2>Ask anything about <span id="subject-title">Biology</span></h2>
+  header {
+    background: rgba(0, 0, 0, 0.25);
+    padding: 20px 0;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  }
 
-        <div class="controls">
-          <select id="subject">
-            <option>Biology</option>
-            <option>Chemistry</option>
-            <option>Physics</option>
-            <option>Mathematics</option>
-            <option>Nursing</option>
-            <option>English</option>
-          </select>
-          <input type="text" id="question" placeholder="Type your question..." />
-        </div>
+  h1 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+  }
 
-        <div class="buttons">
-          <button id="ask-btn">Ask AI</button>
-          <button id="read-btn">🔊 Read aloud</button>
-        </div>
+  .subjects {
+    font-size: 1em;
+    margin-bottom: 10px;
+  }
 
-        <div class="response-box">
-          <h3>AI Response:</h3>
-          <p id="response">Ask a question to get started...</p>
-        </div>
+  .profile {
+    margin-top: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+  }
 
-        <div class="history">
-          <h3>Saved History</h3>
-          <p id="history">No history yet — ask and it will be saved.</p>
-        </div>
-      </section>
-    </main>
+  .profile img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    object-fit: cover;
+  }
 
-    <footer>
-      <p>FullTask AI Tutor — created by <strong>Akin S. Sokpah (Liberia)</strong>.</p>
-    </footer>
+  .signout {
+    background: #ffd700;
+    color: #000;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+  }
 
-    <script type="module" src="/main.js"></script>
-  </body>
+  .section {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 25px;
+    margin: 25px auto;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  select, input {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 1em;
+    margin: 5px;
+    width: 80%;
+    max-width: 400px;
+  }
+
+  button {
+    background: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin: 10px 5px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: #ffb700;
+  }
+
+  .response-box {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    color: #fff;
+    font-style: italic;
+  }
+
+  footer {
+    margin-top: 30px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    font-size: 0.9em;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🧠 FullTask AI Tutor</h1>
+  <div class="subjects">
+    Biology • Chemistry • Nursing • Physics • Math • English
+  </div>
+  <div class="profile">
+    <img src="https://via.placeholder.com/60" alt="Profile">
+    <span><b>Akin Saye Sokpah</b></span>
+    <button class="signout">Sign out</button>
+  </div>
+</header>
+
+<div class="section">
+  <h2>🧠 Ask anything about <span id="subject-title">Biology</span></h2>
+
+  <select id="subject" onchange="updateSubject()">
+    <option>Biology</option>
+    <option>Chemistry</option>
+    <option>Physics</option>
+    <option>Mathematics</option>
+    <option>Nursing</option>
+    <option>English</option>
+  </select><br>
+
+  <input type="text" id="question" placeholder="Type your question here...">
+  <br>
+
+  <button onclick="askAI()">Ask AI</button>
+  <button onclick="readAloud()">🔊 Read aloud</button>
+
+  <div class="response-box" id="response-box">
+    <i>AI response will appear here...</i>
+  </div>
+
+  <h3>📘 Saved History</h3>
+  <div id="history">No history yet — ask and it will be saved.</div>
+</div>
+
+<footer>
+  FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
+</footer>
+
+<script>
+const responseBox = document.getElementById("response-box");
+const historyBox = document.getElementById("history");
+
+function updateSubject() {
+  const subject = document.getElementById("subject").value;
+  document.getElementById("subject-title").innerText = subject;
+}
+
+async function askAI() {
+  const question = document.getElementById("question").value.trim();
+  const subject = document.getElementById("subject").value;
+
+  if (!question) {
+    responseBox.innerHTML = "<i>Please enter a question first.</i>";
+    return;
+  }
+
+  responseBox.innerHTML = "Thinking... 🤔";
+
+  try {
+    // Replace YOUR_API_URL with your Render backend endpoint
+    const res = await fetch("https://your-ai-api.onrender.com/ask", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({ question, subject })
+    });
+
+    const data = await res.json();
+    const aiText = data.answer || "Sorry, no response right now.";
+
+    responseBox.innerHTML = `<b>AI Response:</b> ${aiText}`;
+    saveHistory(question, aiText);
+
+  } catch (error) {
+    responseBox.innerHTML = "⚠️ Error connecting to AI Tutor. Please try again.";
+  }
+}
+
+function saveHistory(q, a) {
+  const prev = historyBox.innerHTML.includes("No history yet")
+    ? ""
+    : historyBox.innerHTML;
+  historyBox.innerHTML = `<p><b>Q:</b> ${q}<br><b>A:</b> ${a}</p>` + prev;
+}
+
+function readAloud() {
+  const msg = new SpeechSynthesisUtterance(responseBox.innerText);
+  msg.lang = "en-US";
+  window.speechSynthesis.speak(msg);
+}
+</script>
+
+</body>
 </html>
