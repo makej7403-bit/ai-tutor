@@ -1,290 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🧠 FullTask AI Tutor</title>
-<style>
-  body {
-    font-family: "Poppins", sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #ffafbd, #ffc3a0);
-    color: #fff;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  header {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px 0;
-    text-align: center;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-  }
-
-  h1 {
-    font-size: 1.8em;
-    margin-bottom: 8px;
-  }
-
-  .subjects {
-    font-size: 1em;
-    margin-bottom: 10px;
-  }
-
-  .profile {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .profile img {
-    width: 55px;
-    height: 55px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    object-fit: cover;
-  }
-
-  .signout {
-    background: #ffd700;
-    color: #000;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-
-  main {
-    display: flex;
-    flex: 1;
-    justify-content: center;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    padding: 20px;
-    transition: margin-right 0.4s ease;
-  }
-
-  .section {
-    background: rgba(255, 255, 255, 0.15);
-    padding: 25px;
-    margin: 10px;
-    width: 90%;
-    max-width: 550px;
-    border-radius: 16px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  }
-
-  select, input {
-    padding: 10px;
-    border-radius: 8px;
-    border: none;
-    outline: none;
-    font-size: 1em;
-    margin: 5px;
-    width: 80%;
-    max-width: 400px;
-  }
-
-  button {
-    background: #ffd700;
-    color: #000;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 20px;
-    margin: 10px 5px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background: #ffb700;
-  }
-
-  .response-box {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 15px;
-    border-radius: 10px;
-    margin-top: 15px;
-    color: #fff;
-    font-style: italic;
-  }
-
-  /* Sidebar styling */
-  .sidebar {
-    position: fixed;
-    top: 0;
-    right: -300px;
-    width: 280px;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(10px);
-    padding: 20px;
-    transition: right 0.4s ease;
-    box-shadow: -3px 0 15px rgba(0, 0, 0, 0.4);
-    overflow-y: auto;
-    z-index: 1000;
-  }
-
-  .sidebar.open {
-    right: 0;
-  }
-
-  .sidebar h3 {
-    text-align: center;
-    margin-top: 0;
-  }
-
-  .sidebar button.close-btn {
-    background: #ff4444;
-    border: none;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 6px;
-    float: right;
-    cursor: pointer;
-  }
-
-  .toggle-sidebar {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #ffd700;
-    color: #000;
-    border: none;
-    border-radius: 50%;
-    width: 45px;
-    height: 45px;
-    font-size: 1.3em;
-    cursor: pointer;
-    z-index: 1100;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-  }
-
-  footer {
-    text-align: center;
-    padding: 15px;
-    background: rgba(0, 0, 0, 0.3);
-    font-size: 0.9em;
-  }
-
-  @media (max-width: 768px) {
-    .toggle-sidebar {
-      top: 15px;
-      right: 15px;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧠 FullTask AI Tutor</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background-color: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      min-height: 100vh;
     }
-  }
-</style>
+    /* Sidebar */
+    aside {
+      width: 260px;
+      background: #161b22;
+      padding: 20px;
+      box-sizing: border-box;
+      border-right: 1px solid #30363d;
+    }
+    aside h2 {
+      margin-top: 0;
+      color: #58a6ff;
+    }
+    #history {
+      list-style: none;
+      padding: 0;
+      margin-top: 10px;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #history li {
+      background: #21262d;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    #history b {
+      color: #79c0ff;
+    }
+    /* Main */
+    main {
+      flex: 1;
+      padding: 30px;
+      box-sizing: border-box;
+    }
+    h1 {
+      font-size: 1.6rem;
+      color: #58a6ff;
+      margin-bottom: 8px;
+    }
+    .subjects {
+      margin-bottom: 10px;
+    }
+    .subjects button {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin: 2px;
+      padding: 8px 12px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .subjects button:hover {
+      background: #238636;
+      color: #fff;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      border-radius: 8px;
+      background: #161b22;
+      color: #e6edf3;
+      border: 1px solid #30363d;
+      padding: 10px;
+      resize: none;
+      font-size: 1rem;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+    button.ask {
+      background: #238636;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button.read {
+      background: #30363d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-left: 10px;
+    }
+    #aiResponse {
+      margin-top: 20px;
+      background: #161b22;
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid #30363d;
+      min-height: 60px;
+    }
+    footer {
+      text-align: center;
+      padding: 10px;
+      border-top: 1px solid #30363d;
+      color: #8b949e;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
+  <aside>
+    <h2>📘 Saved History</h2>
+    <ul id="history"></ul>
+  </aside>
 
-<header>
-  <h1>🧠 FullTask AI Tutor</h1>
-  <div class="subjects">Biology • Chemistry • Nursing • Physics • Math • English</div>
-  <div class="profile">
-    <img src="https://via.placeholder.com/55" alt="Profile">
-    <span><b>Akin Saye Sokpah</b></span>
-    <button class="signout">Sign out</button>
-  </div>
-</header>
+  <main>
+    <h1>🧠 FullTask AI Tutor</h1>
+    <p>Biology • Chemistry • Nursing • Physics • Math • English</p>
+    <p><b>Profile:</b> Akin Saye Sokpah <button id="signOut">Sign out</button></p>
 
-<!-- Sidebar toggle button -->
-<button class="toggle-sidebar" onclick="toggleSidebar()">📘</button>
+    <h2>🧠 Ask anything about <span id="subjectLabel">Biology</span></h2>
 
-<main>
-  <div class="section">
-    <h2>🧠 Ask anything about <span id="subject-title">Biology</span></h2>
-
-    <select id="subject" onchange="updateSubject()">
-      <option>Biology</option>
-      <option>Chemistry</option>
-      <option>Physics</option>
-      <option>Mathematics</option>
-      <option>Nursing</option>
-      <option>English</option>
-    </select><br>
-
-    <input type="text" id="question" placeholder="Type your question here...">
-    <br>
-
-    <button onclick="askAI()">Ask AI</button>
-    <button onclick="readAloud()">🔊 Read aloud</button>
-
-    <div class="response-box" id="response-box">
-      <i>AI response will appear here...</i>
+    <div class="subjects">
+      <button onclick="setSubject('Biology')">Biology</button>
+      <button onclick="setSubject('Chemistry')">Chemistry</button>
+      <button onclick="setSubject('Physics')">Physics</button>
+      <button onclick="setSubject('Mathematics')">Mathematics</button>
+      <button onclick="setSubject('Nursing')">Nursing</button>
+      <button onclick="setSubject('English')">English</button>
     </div>
-  </div>
-</main>
 
-<!-- Sidebar for history -->
-<div class="sidebar" id="sidebar">
-  <button class="close-btn" onclick="toggleSidebar()">×</button>
-  <h3>📘 Saved History</h3>
-  <div id="history">No history yet — ask and it will be saved.</div>
-</div>
+    <textarea id="userQuestion" placeholder="Ask your question..."></textarea>
 
-<footer>
-  FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
-</footer>
+    <div class="controls">
+      <button class="ask" id="askBtn">Ask AI</button>
+      <button class="read" id="readBtn">🔊 Read aloud</button>
+    </div>
 
-<script>
-const responseBox = document.getElementById("response-box");
-const historyBox = document.getElementById("history");
-const sidebar = document.getElementById("sidebar");
+    <div id="aiResponse">Your AI Tutor is ready to help!</div>
 
-function toggleSidebar() {
-  sidebar.classList.toggle("open");
-}
+    <footer>
+      FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
+    </footer>
+  </main>
 
-function updateSubject() {
-  const subject = document.getElementById("subject").value;
-  document.getElementById("subject-title").innerText = subject;
-}
+  <script>
+    const API_URL = "https://ai-tutor-e5m3.onrender.com/api/ask"; // ✅ your backend
+    const askBtn = document.getElementById("askBtn");
+    const readBtn = document.getElementById("readBtn");
+    const aiResponse = document.getElementById("aiResponse");
+    const userQuestion = document.getElementById("userQuestion");
+    const historyList = document.getElementById("history");
+    let currentSubject = "Biology";
 
-async function askAI() {
-  const question = document.getElementById("question").value.trim();
-  const subject = document.getElementById("subject").value;
+    function setSubject(subject) {
+      currentSubject = subject;
+      document.getElementById("subjectLabel").textContent = subject;
+    }
 
-  if (!question) {
-    responseBox.innerHTML = "<i>Please enter a question first.</i>";
-    return;
-  }
+    askBtn.addEventListener("click", async () => {
+      const question = userQuestion.value.trim();
+      if (!question) {
+        aiResponse.textContent = "⚠️ Please enter a question.";
+        return;
+      }
 
-  responseBox.innerHTML = "Thinking... 🤔";
+      aiResponse.textContent = "⏳ Thinking...";
 
-  try {
-    const res = await fetch("https://your-ai-api.onrender.com/ask", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({ question, subject })
+      try {
+        const res = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, subject: currentSubject })
+        });
+
+        if (!res.ok) throw new Error("Bad server response");
+
+        const data = await res.json();
+        aiResponse.textContent = data.answer || "🤔 No answer received.";
+        saveToHistory(question, data.answer);
+      } catch (err) {
+        console.error(err);
+        aiResponse.textContent = "⚠️ Error connecting to AI Tutor. Please try again.";
+      }
     });
 
-    const data = await res.json();
-    const aiText = data.answer || "Sorry, no response right now.";
+    readBtn.addEventListener("click", () => {
+      const msg = new SpeechSynthesisUtterance(aiResponse.textContent);
+      msg.lang = "en-US";
+      speechSynthesis.speak(msg);
+    });
 
-    responseBox.innerHTML = `<b>AI Response:</b> ${aiText}`;
-    saveHistory(question, aiText);
-
-  } catch (error) {
-    responseBox.innerHTML = "⚠️ Error connecting to AI Tutor. Please try again.";
-  }
-}
-
-function saveHistory(q, a) {
-  const prev = historyBox.innerHTML.includes("No history yet") ? "" : historyBox.innerHTML;
-  historyBox.innerHTML = `<p><b>Q:</b> ${q}<br><b>A:</b> ${a}</p>` + prev;
-}
-
-function readAloud() {
-  const msg = new SpeechSynthesisUtterance(responseBox.innerText);
-  msg.lang = "en-US";
-  window.speechSynthesis.speak(msg);
-}
-</script>
-
+    function saveToHistory(q, a) {
+      const item = document.createElement("li");
+      item.innerHTML = `<b>Q:</b> ${q}<br><b>A:</b> ${a}`;
+      historyList.prepend(item);
+    }
+  </script>
 </body>
 </html>
