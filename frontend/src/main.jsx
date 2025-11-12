@@ -6,22 +6,22 @@ const App = () => {
   const [subject, setSubject] = useState("Biology");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
-  const [displayed, setDisplayed] = useState(""); // for typing effect
+  const [displayed, setDisplayed] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const [history, setHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [error, setError] = useState("");
 
   // Typing animation
   useEffect(() => {
     if (!answer) return;
     let i = 0;
-    const interval = setInterval(() => {
+    const timer = setInterval(() => {
       setDisplayed(answer.slice(0, i));
       i++;
-      if (i > answer.length) clearInterval(interval);
+      if (i > answer.length) clearInterval(timer);
     }, 25);
-    return () => clearInterval(interval);
+    return () => clearInterval(timer);
   }, [answer]);
 
   const handleAskAI = async () => {
@@ -39,56 +39,74 @@ const App = () => {
       });
 
       const data = await res.json();
+      const aiText =
+        data.answer ||
+        data.response ||
+        data.message ||
+        data.output ||
+        "⚠️ No response from AI.";
 
-      if (data.answer) {
-        setAnswer(data.answer);
-        setHistory((prev) => [
-          ...prev,
-          { q: question, a: data.answer, time: new Date().toLocaleTimeString() },
-        ]);
-      } else {
-        setError("⚠️ No response from AI.");
-      }
-    } catch (err) {
+      setAnswer(aiText);
+      setHistory((prev) => [
+        ...prev,
+        { q: question, a: aiText, time: new Date().toLocaleTimeString() },
+      ]);
+    } catch {
       setError("⚠️ Error connecting to AI Tutor. Please try again.");
     }
+
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-purple-800 text-white font-sans p-5">
-      <header className="text-center mb-6">
-        <h1 className="text-3xl font-bold">🧠 FullTask AI Tutor</h1>
-        <p className="text-purple-300 mt-2">
-          Biology • Chemistry • Nursing • Physics • Math • English
-        </p>
-        <div className="flex justify-between items-center mt-4 max-w-3xl mx-auto">
-          <p className="text-sm text-gray-300">
-            <strong>Profile:</strong> Akin Saye Sokpah
+    <div className="min-h-screen bg-gradient-to-br from-purple-950 via-black to-purple-900 text-white font-sans">
+      {/* Header */}
+      <header className="flex justify-between items-center p-5 border-b border-purple-800">
+        <div>
+          <h1 className="text-2xl font-bold">🧠 FullTask AI Tutor</h1>
+          <p className="text-purple-300 text-sm">
+            Biology • Chemistry • Nursing • Physics • Math • English
           </p>
-          <button className="bg-purple-700 hover:bg-purple-800 px-3 py-1 rounded">
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowHistory(true)}
+            className="bg-purple-700 hover:bg-purple-800 px-3 py-1 rounded-lg shadow"
+            title="View Saved History"
+          >
+            📘
+          </button>
+          <span className="text-sm text-gray-300">
+            Profile: <b>Akin Saye Sokpah</b>
+          </span>
+          <button className="bg-purple-700 hover:bg-purple-800 px-3 py-1 rounded-lg">
             Sign out
           </button>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto bg-gray-900/70 p-6 rounded-2xl shadow-xl">
+      {/* Main Content */}
+      <main className="max-w-3xl mx-auto p-6">
         <h2 className="text-lg font-semibold mb-3">
-          🧠 Ask anything about <span className="text-purple-400">{subject}</span>
+          🧠 Ask anything about{" "}
+          <span className="text-purple-400">{subject}</span>
         </h2>
 
         <div className="flex flex-wrap justify-center gap-2 mb-4">
-          {["Biology", "Chemistry", "Physics", "Mathematics", "Nursing", "English"].map((sub) => (
-            <button
-              key={sub}
-              onClick={() => setSubject(sub)}
-              className={`px-3 py-1 rounded-full ${
-                subject === sub ? "bg-purple-600" : "bg-gray-800 hover:bg-gray-700"
-              }`}
-            >
-              {sub}
-            </button>
-          ))}
+          {["Biology", "Chemistry", "Physics", "Mathematics", "Nursing", "English"].map(
+            (sub) => (
+              <button
+                key={sub}
+                onClick={() => setSubject(sub)}
+                className={`px-3 py-1 rounded-full ${
+                  subject === sub ? "bg-purple-600" : "bg-gray-800 hover:bg-gray-700"
+                }`}
+              >
+                {sub}
+              </button>
+            )
+          )}
         </div>
 
         <textarea
@@ -107,12 +125,13 @@ const App = () => {
           >
             {loading ? "Thinking..." : "Ask AI"}
           </button>
+
           <button
             onClick={() => {
               if (answer) {
-                const utterance = new SpeechSynthesisUtterance(answer);
-                utterance.lang = "en-US";
-                window.speechSynthesis.speak(utterance);
+                const speak = new SpeechSynthesisUtterance(answer);
+                speak.lang = "en-US";
+                window.speechSynthesis.speak(speak);
               }
             }}
             className="text-purple-400 hover:text-purple-300"
@@ -121,48 +140,43 @@ const App = () => {
           </button>
         </div>
 
-        <div className="mt-5">
-          <h3 className="text-lg font-semibold text-purple-400">AI Response:</h3>
-          <div className="mt-2 bg-gray-800 p-4 rounded-lg min-h-[80px]">
-            {error ? (
-              <p className="text-red-400">{error}</p>
-            ) : (
-              <p className="text-gray-200 whitespace-pre-wrap">
-                {displayed || "Ask a question to begin..."}
-              </p>
-            )}
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold text-purple-400 mb-2">
+            AI Response:
+          </h3>
+          <div className="bg-gray-900/70 p-4 rounded-lg min-h-[100px] text-gray-200">
+            {error ? error : displayed || "Ask a question to begin..."}
           </div>
         </div>
       </main>
 
-      <footer className="text-center mt-6 text-sm text-gray-400">
-        FullTask AI Tutor — created by <strong>Akin S. Sokpah (Liberia)</strong>.
+      <footer className="text-center text-sm text-gray-400 mt-10 pb-6">
+        FullTask AI Tutor — created by{" "}
+        <strong>Akin S. Sokpah (Liberia)</strong>.
       </footer>
 
-      {/* 📘 Floating History Button */}
-      <button
-        onClick={() => setShowHistory(!showHistory)}
-        className="fixed bottom-6 right-6 bg-purple-700 hover:bg-purple-800 text-white px-4 py-2 rounded-full shadow-lg"
-      >
-        📘 History
-      </button>
-
+      {/* 📘 HISTORY SIDEBAR */}
       {showHistory && (
-        <div className="fixed top-0 right-0 w-80 h-full bg-gray-950/95 border-l border-purple-700 p-5 z-50">
-          <h3 className="text-lg font-semibold text-purple-400 mb-4">📘 Saved History</h3>
+        <div className="fixed top-0 right-0 w-80 h-full bg-gray-950 border-l border-purple-700 p-5 z-50">
+          <h3 className="text-lg font-semibold text-purple-400 mb-3">
+            📘 Saved History
+          </h3>
           {history.length === 0 ? (
             <p className="text-gray-400">No history yet.</p>
           ) : (
             history.map((h, i) => (
-              <div key={i} className="mb-3 border-b border-gray-800 pb-2">
-                <p className="text-purple-300">Q: {h.q}</p>
-                <p className="text-gray-300 mt-1">A: {h.a}</p>
+              <div
+                key={i}
+                className="mb-3 bg-gray-900/70 p-2 rounded-lg border border-gray-800"
+              >
+                <p className="text-purple-300 text-sm">Q: {h.q}</p>
+                <p className="text-gray-200 text-sm mt-1">A: {h.a}</p>
               </div>
             ))
           )}
           <button
             onClick={() => setShowHistory(false)}
-            className="mt-4 bg-purple-700 w-full py-2 rounded-lg"
+            className="mt-4 bg-purple-700 hover:bg-purple-800 w-full py-2 rounded-lg"
           >
             Close
           </button>
