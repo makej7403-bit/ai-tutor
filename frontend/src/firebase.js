@@ -1,8 +1,24 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "firebase/auth";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  getDocs,
+  serverTimestamp
+} from "firebase/firestore";
 
-const firebaseConfig = {
+export const firebaseConfig = {
   apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
   authDomain: "fir-u-c-students-web.firebaseapp.com",
   databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
@@ -13,16 +29,39 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+export const auth = getAuth(app);
+export const provider = new GoogleAuthProvider();
+export const db = getFirestore(app);
 
-export const signInWithGoogle = async () => {
-  const result = await signInWithPopup(auth, provider);
-  return result.user;
-};
+export async function signInWithGooglePopup() {
+  return signInWithPopup(auth, provider);
+}
+export async function signOutUser() {
+  return signOut(auth);
+}
 
-export const signOutUser = async () => {
-  await signOut(auth);
-};
+export function onAuthChange(cb) {
+  return onAuthStateChanged(auth, cb);
+}
 
-export default app;
+// history helpers
+export async function saveHistory(uid, subject, question, answer) {
+  if (!uid) return null;
+  const col = collection(db, "histories");
+  const doc = await addDoc(col, {
+    uid,
+    subject,
+    question,
+    answer,
+    createdAt: serverTimestamp()
+  });
+  return doc.id;
+}
+
+export async function loadHistory(uid, limit = 50) {
+  if (!uid) return [];
+  const col = collection(db, "histories");
+  const q = query(col, where("uid", "==", uid), orderBy("createdAt", "desc"));
+  const snap = await getDocs(q);
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
