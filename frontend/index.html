@@ -4,209 +4,137 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🧠 FullTask AI Tutor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script defer src="app.js"></script>
   <style>
     body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      background-color: #0d1117;
-      color: #e6edf3;
-      display: flex;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    /* Sidebar */
-    aside {
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    .menu-btn {
+      position: absolute;
+      left: 15px;
+      top: 15px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    #sidebar {
+      position: fixed;
+      left: -300px;
+      top: 0;
       width: 260px;
-      background: #161b22;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
       padding: 20px;
-      box-sizing: border-box;
-      border-right: 1px solid #30363d;
-    }
-    aside h2 {
-      margin-top: 0;
-      color: #58a6ff;
-    }
-    #history {
-      list-style: none;
-      padding: 0;
-      margin-top: 10px;
-      max-height: 70vh;
+      transition: left 0.3s ease;
       overflow-y: auto;
+      z-index: 50;
     }
-    #history li {
-      background: #21262d;
-      margin-bottom: 10px;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 0.9rem;
-    }
-    #history b {
-      color: #79c0ff;
-    }
-    /* Main */
-    main {
-      flex: 1;
-      padding: 30px;
-      box-sizing: border-box;
-    }
-    h1 {
-      font-size: 1.6rem;
-      color: #58a6ff;
-      margin-bottom: 8px;
-    }
-    .subjects {
-      margin-bottom: 10px;
-    }
-    .subjects button {
-      background: #21262d;
-      color: #c9d1d9;
-      border: 1px solid #30363d;
-      border-radius: 8px;
-      margin: 2px;
-      padding: 8px 12px;
+    #sidebar.active { left: 0; }
+    #sidebar h2 { font-size: 20px; margin-bottom: 10px; }
+    #sidebar ul { list-style: none; padding: 0; }
+    #sidebar ul li { margin-bottom: 8px; }
+    #closeSidebar {
       cursor: pointer;
-      transition: 0.2s;
-    }
-    .subjects button:hover {
-      background: #238636;
-      color: #fff;
-    }
-    textarea {
-      width: 100%;
-      height: 80px;
-      border-radius: 8px;
-      background: #161b22;
-      color: #e6edf3;
-      border: 1px solid #30363d;
-      padding: 10px;
-      resize: none;
-      font-size: 1rem;
-    }
-    .controls {
-      margin-top: 10px;
-    }
-    button.ask {
-      background: #238636;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-    button.read {
-      background: #30363d;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 20px;
-      cursor: pointer;
-      font-size: 1rem;
-      margin-left: 10px;
-    }
-    #aiResponse {
-      margin-top: 20px;
-      background: #161b22;
-      padding: 15px;
-      border-radius: 8px;
-      border: 1px solid #30363d;
-      min-height: 60px;
-    }
-    footer {
-      text-align: center;
-      padding: 10px;
-      border-top: 1px solid #30363d;
-      color: #8b949e;
-      margin-top: 20px;
+      color: #ff6b6b;
+      font-weight: bold;
     }
   </style>
 </head>
+
 <body>
-  <aside>
+  <div class="menu-btn" onclick="toggleSidebar()">☰</div>
+
+  <div id="sidebar">
+    <div id="closeSidebar" onclick="toggleSidebar()">✖ Close</div>
     <h2>📘 Saved History</h2>
-    <ul id="history"></ul>
-  </aside>
+    <ul id="historyList"></ul>
+  </div>
 
-  <main>
-    <h1>🧠 FullTask AI Tutor</h1>
-    <p>Biology • Chemistry • Nursing • Physics • Math • English</p>
-    <p><b>Profile:</b> Akin Saye Sokpah <button id="signOut">Sign out</button></p>
+  <div class="text-center mt-12 glass p-8 w-11/12 md:w-3/4 lg:w-1/2">
+    <h1 class="text-3xl font-bold mb-4">🧠 FullTask AI Tutor</h1>
+    <p class="mb-3 text-gray-300">Biology • Chemistry • Nursing • Physics • Math • English</p>
+    <p class="text-sm mb-6">Profile: <strong>Akin Saye Sokpah</strong> — <a href="#" class="text-red-400">Sign out</a></p>
 
-    <h2>🧠 Ask anything about <span id="subjectLabel">Biology</span></h2>
-
-    <div class="subjects">
-      <button onclick="setSubject('Biology')">Biology</button>
-      <button onclick="setSubject('Chemistry')">Chemistry</button>
-      <button onclick="setSubject('Physics')">Physics</button>
-      <button onclick="setSubject('Mathematics')">Mathematics</button>
-      <button onclick="setSubject('Nursing')">Nursing</button>
-      <button onclick="setSubject('English')">English</button>
+    <h2 class="text-xl font-semibold mb-3">🧠 Ask anything about <span id="subjectLabel">Biology</span></h2>
+    <div class="flex flex-wrap justify-center mb-3">
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('Biology')">Biology</button>
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('Chemistry')">Chemistry</button>
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('Physics')">Physics</button>
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('Mathematics')">Mathematics</button>
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('Nursing')">Nursing</button>
+      <button class="m-1 px-3 py-1 bg-purple-600 rounded-lg" onclick="setSubject('English')">English</button>
     </div>
 
-    <textarea id="userQuestion" placeholder="Ask your question..."></textarea>
-
-    <div class="controls">
-      <button class="ask" id="askBtn">Ask AI</button>
-      <button class="read" id="readBtn">🔊 Read aloud</button>
+    <div class="flex mb-3">
+      <input id="questionInput" type="text" placeholder="Ask your question..." class="flex-grow p-2 rounded-l-lg text-black">
+      <button onclick="askAI()" class="bg-indigo-600 px-4 py-2 rounded-r-lg">Ask AI</button>
     </div>
+    <p id="aiResponse" class="mt-4 text-left text-lg"></p>
+  </div>
 
-    <div id="aiResponse">Your AI Tutor is ready to help!</div>
-
-    <footer>
-      FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
-    </footer>
-  </main>
+  <p class="mt-6 text-sm text-gray-400">FullTask AI Tutor — created by <strong>Akin S. Sokpah (Liberia)</strong>.</p>
 
   <script>
-    const API_URL = "https://ai-tutor-e5m3.onrender.com/api/ask"; // ✅ your backend
-    const askBtn = document.getElementById("askBtn");
-    const readBtn = document.getElementById("readBtn");
-    const aiResponse = document.getElementById("aiResponse");
-    const userQuestion = document.getElementById("userQuestion");
-    const historyList = document.getElementById("history");
+    // Sidebar toggle
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('active');
+    }
+
     let currentSubject = "Biology";
+    const subjectLabel = document.getElementById("subjectLabel");
+    const aiResponse = document.getElementById("aiResponse");
+    const historyList = document.getElementById("historyList");
 
     function setSubject(subject) {
       currentSubject = subject;
-      document.getElementById("subjectLabel").textContent = subject;
+      subjectLabel.textContent = subject;
     }
 
-    askBtn.addEventListener("click", async () => {
-      const question = userQuestion.value.trim();
-      if (!question) {
-        aiResponse.textContent = "⚠️ Please enter a question.";
-        return;
-      }
-
-      aiResponse.textContent = "⏳ Thinking...";
+    async function askAI() {
+      const question = document.getElementById("questionInput").value.trim();
+      if (!question) return;
+      aiResponse.textContent = "Thinking...";
 
       try {
-        const res = await fetch(API_URL, {
+        const res = await fetch("https://ai-tutor-e5m3.onrender.com/ask", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ question, subject: currentSubject })
         });
 
-        if (!res.ok) throw new Error("Bad server response");
-
+        if (!res.ok) throw new Error("Network error");
         const data = await res.json();
-        aiResponse.textContent = data.answer || "🤔 No answer received.";
-        saveToHistory(question, data.answer);
+
+        if (data.answer) {
+          aiResponse.innerHTML = `<strong>AI:</strong> ${data.answer}`;
+          saveHistory(question, data.answer);
+        } else {
+          aiResponse.textContent = "⚠️ No answer from AI.";
+        }
       } catch (err) {
-        console.error(err);
         aiResponse.textContent = "⚠️ Error connecting to AI Tutor. Please try again.";
       }
-    });
+    }
 
-    readBtn.addEventListener("click", () => {
-      const msg = new SpeechSynthesisUtterance(aiResponse.textContent);
-      msg.lang = "en-US";
-      speechSynthesis.speak(msg);
-    });
-
-    function saveToHistory(q, a) {
-      const item = document.createElement("li");
-      item.innerHTML = `<b>Q:</b> ${q}<br><b>A:</b> ${a}`;
-      historyList.prepend(item);
+    // Save to sidebar history
+    function saveHistory(q, a) {
+      const li = document.createElement("li");
+      li.innerHTML = `<strong>Q:</strong> ${q}<br><strong>A:</strong> ${a}`;
+      historyList.prepend(li);
     }
   </script>
 </body>
