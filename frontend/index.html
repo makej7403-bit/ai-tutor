@@ -9,23 +9,24 @@
     font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #b993d6, #8ca6db);
+    background: linear-gradient(135deg, #ffafbd, #ffc3a0);
     color: #fff;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-x: hidden;
   }
 
   header {
-    background: rgba(0, 0, 0, 0.25);
-    padding: 20px 0;
-    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px 0;
     text-align: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
   }
 
   h1 {
     font-size: 1.8em;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
 
   .subjects {
@@ -44,7 +45,7 @@
     width: 55px;
     height: 55px;
     border-radius: 50%;
-    border: 3px solid #fff;
+    border: 2px solid #fff;
     object-fit: cover;
   }
 
@@ -65,6 +66,7 @@
     align-items: flex-start;
     flex-wrap: wrap;
     padding: 20px;
+    transition: margin-right 0.4s ease;
   }
 
   .section {
@@ -112,22 +114,55 @@
     font-style: italic;
   }
 
-  /* Sidebar */
+  /* Sidebar styling */
   .sidebar {
-    background: rgba(255, 255, 255, 0.1);
+    position: fixed;
+    top: 0;
+    right: -300px;
+    width: 280px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
     padding: 20px;
-    margin: 10px;
-    width: 260px;
-    border-radius: 16px;
-    height: fit-content;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    transition: right 0.4s ease;
+    box-shadow: -3px 0 15px rgba(0, 0, 0, 0.4);
     overflow-y: auto;
-    max-height: 70vh;
+    z-index: 1000;
+  }
+
+  .sidebar.open {
+    right: 0;
   }
 
   .sidebar h3 {
-    margin-top: 0;
     text-align: center;
+    margin-top: 0;
+  }
+
+  .sidebar button.close-btn {
+    background: #ff4444;
+    border: none;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    float: right;
+    cursor: pointer;
+  }
+
+  .toggle-sidebar {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #ffd700;
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    font-size: 1.3em;
+    cursor: pointer;
+    z-index: 1100;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
   }
 
   footer {
@@ -137,16 +172,10 @@
     font-size: 0.9em;
   }
 
-  /* Responsive */
   @media (max-width: 768px) {
-    main {
-      flex-direction: column;
-      align-items: center;
-    }
-    .sidebar {
-      width: 90%;
-      max-width: 550px;
-      order: 2;
+    .toggle-sidebar {
+      top: 15px;
+      right: 15px;
     }
   }
 </style>
@@ -162,6 +191,9 @@
     <button class="signout">Sign out</button>
   </div>
 </header>
+
+<!-- Sidebar toggle button -->
+<button class="toggle-sidebar" onclick="toggleSidebar()">📘</button>
 
 <main>
   <div class="section">
@@ -186,12 +218,14 @@
       <i>AI response will appear here...</i>
     </div>
   </div>
-
-  <div class="sidebar">
-    <h3>📘 Saved History</h3>
-    <div id="history">No history yet — ask and it will be saved.</div>
-  </div>
 </main>
+
+<!-- Sidebar for history -->
+<div class="sidebar" id="sidebar">
+  <button class="close-btn" onclick="toggleSidebar()">×</button>
+  <h3>📘 Saved History</h3>
+  <div id="history">No history yet — ask and it will be saved.</div>
+</div>
 
 <footer>
   FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
@@ -200,6 +234,11 @@
 <script>
 const responseBox = document.getElementById("response-box");
 const historyBox = document.getElementById("history");
+const sidebar = document.getElementById("sidebar");
+
+function toggleSidebar() {
+  sidebar.classList.toggle("open");
+}
 
 function updateSubject() {
   const subject = document.getElementById("subject").value;
@@ -218,7 +257,6 @@ async function askAI() {
   responseBox.innerHTML = "Thinking... 🤔";
 
   try {
-    // Replace with your real Render backend URL
     const res = await fetch("https://your-ai-api.onrender.com/ask", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
@@ -237,9 +275,7 @@ async function askAI() {
 }
 
 function saveHistory(q, a) {
-  const prev = historyBox.innerHTML.includes("No history yet")
-    ? ""
-    : historyBox.innerHTML;
+  const prev = historyBox.innerHTML.includes("No history yet") ? "" : historyBox.innerHTML;
   historyBox.innerHTML = `<p><b>Q:</b> ${q}<br><b>A:</b> ${a}</p>` + prev;
 }
 
