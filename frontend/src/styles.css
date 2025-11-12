@@ -1,82 +1,62 @@
-/* src/styles.css - polished layout that preserves your features and looks great */
-
-/* Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-:root {
-  --bg: #071127;
-  --card: rgba(255,255,255,0.03);
-  --muted: rgba(255,255,255,0.7);
-  --accent: #60a5fa;
-  --gold: #ffd86b;
+/* 🌸 Romantic Classic Theme */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  color: #f8eef7;
+  background: linear-gradient(135deg, #2e003e 0%, #521262 30%, #8a307f 70%, #ad5389 100%);
+  background-attachment: fixed;
 }
 
-/* Global */
-* { box-sizing: border-box; }
-html,body,#root { height: 100%; margin: 0; font-family: 'Poppins', sans-serif; color: #e6eef8; background: linear-gradient(135deg,#04203a,#053a6b 60%, #041428); }
-.ft-app { display:flex; flex-direction:column; min-height:100vh; }
+/* Centered Layout */
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 2rem;
+  text-align: center;
+}
 
-/* Header */
-.ft-header { display:flex; justify-content:space-between; align-items:center; padding:18px 28px; gap:12px; }
-.ft-brand { display:flex; align-items:center; gap:12px; }
-.ft-logo { width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:linear-gradient(90deg,#0bb7ff,#6b5cff); color:#001; font-size:28px; }
-.ft-title .main-title { font-weight:700; font-size:20px; }
-.ft-title .subtitle { font-size:12px; color:var(--muted); margin-top:6px; }
+/* Buttons */
+button {
+  background: linear-gradient(90deg, #ff8bd8, #d66eff);
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  margin: 10px;
+  font-weight: bold;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background: linear-gradient(90deg, #d66eff, #ff8bd8);
+  transform: scale(1.05);
+}
 
-/* header controls */
-.ft-controls { display:flex; align-items:center; gap:10px; }
-.theme-select { padding:8px 10px; border-radius:8px; border:none; background: rgba(255,255,255,0.06); color:inherit; }
-.user-inline { display:flex; align-items:center; gap:8px; }
-.avatar { width:44px; height:44px; border-radius:50%; object-fit:cover; }
-.user-name { font-weight:600; margin-right:8px; color:#fff; }
-.btn { padding:8px 14px; border-radius:10px; border:none; cursor:pointer; background: rgba(255,255,255,0.06); color: #eaf4ff; }
-.btn.signout { background: linear-gradient(90deg,#ffd86b,#ffb86b); color:#001; font-weight:700; }
+/* Input box */
+input, select {
+  border-radius: 6px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin: 10px;
+  width: 80%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
 
-/* Main layout */
-.ft-main { display:flex; gap:20px; padding:20px 28px; flex:1; align-items:flex-start; }
-.left-column { flex:1.1; }
-.right-column { width:360px; }
+/* Response section */
+.response-box {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 15px rgba(255, 192, 203, 0.3);
+}
 
-/* Cards */
-.card { background: var(--card); border-radius:14px; padding:18px; box-shadow: 0 10px 30px rgba(2,6,23,0.2); }
-.ask-card { display:flex; flex-direction:column; gap:12px; }
-
-/* Ask heading */
-.ask-heading { font-size:22px; margin:6px 0; }
-.accent { color: var(--accent); font-weight:700; }
-
-/* Subject row */
-.subject-row { display:flex; gap:12px; align-items:flex-start; }
-.subject-select { width:180px; padding:10px; border-radius:10px; border:none; background: rgba(255,255,255,0.04); color:inherit; }
-.question-input { flex:1; padding:12px; border-radius:10px; border:none; min-height:86px; resize:vertical; background: rgba(255,255,255,0.02); color:inherit; }
-
-/* action row */
-.action-row { display:flex; gap:12px; margin-top:6px; }
-.btn.primary { background:linear-gradient(90deg,#00d4ff,#4f8bff); color:#001; font-weight:700; }
-.btn.outline { background:transparent; border:1px solid rgba(255,255,255,0.06); color:inherit; }
-
-/* response */
-.response-panel { margin-top:12px; background: rgba(255,255,255,0.02); padding:12px; border-radius:10px; }
-.label { color:var(--muted); font-size:13px; margin-bottom:6px; }
-.response { color:#eaf4ff; line-height:1.5; white-space:pre-wrap; }
-
-/* history card */
-.history-card { margin-bottom:14px; }
-.history-list { max-height:420px; overflow:auto; display:flex; flex-direction:column; gap:10px; }
-.history-item { background: rgba(255,255,255,0.01); padding:10px; border-radius:8px; }
-.history-item .meta { color:var(--muted); font-size:12px; margin-bottom:6px; }
-.empty { color:var(--muted); padding:10px; }
-
-/* about card */
-.about-card { margin-top:10px; }
-
-/* footer */
-.ft-footer { padding:14px 20px; text-align:center; color:var(--muted); font-size:14px; }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .ft-main { flex-direction: column; padding:16px; }
-  .right-column { width:100%; }
-  .theme-select { display:none; }
-  .ft-header { flex-direction:column; align-items:flex-start; gap:12px; padding:14px; }
-  .ft-title .main-title { font-size:18px; }
+/* Footer */
+footer {
+  margin-top: 40px;
+  color: #f8eef7;
+  opacity: 0.8;
+  font-size: 0.9em;
 }
