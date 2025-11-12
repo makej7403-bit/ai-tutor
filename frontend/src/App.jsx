@@ -1,61 +1,48 @@
 // src/App.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
-  firebaseConfig,
   signInWithGooglePopup,
   signOutUser,
   onAuthChange,
   saveHistory,
   loadHistory
-} from "./firebase";
+} from "./firebase"; // your firebase helper (unchanged)
 
-// Backend endpoint (your render backend)
-const BACKEND_URL = "https://ai-tutor-e5m3.onrender.com";
-
-const THEMES = {
-  blue: "theme-blue",
-  galaxy: "theme-galaxy",
-  light: "theme-light"
-};
+const BACKEND_URL = "https://ai-tutor-e5m3.onrender.com"; // keep your backend
 
 function speak(text) {
   if (!text) return;
   try {
     const u = new SpeechSynthesisUtterance(text);
     u.lang = "en-US";
-    u.rate = 1;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   } catch (e) {
-    console.warn("TTS not available", e);
+    console.warn("TTS error", e);
   }
 }
 
 export default function App() {
-  const [theme, setTheme] = useState(localStorage.getItem("ft_theme") || THEMES.blue);
+  const [theme, setTheme] = useState(localStorage.getItem("ft_theme") || "blue");
   const [subject, setSubject] = useState("Biology");
-  const [q, setQ] = useState("");
-  const [aiResp, setAiResp] = useState("Ask anything — AI will read the answer aloud!");
+  const [question, setQuestion] = useState("");
+  const [response, setResponse] = useState("Ask anything — AI will answer instantly!");
   const [loading, setLoading] = useState(false);
 
   const [user, setUser] = useState(null);
   const [history, setHistory] = useState([]);
+  const messagesRef = useRef(null);
 
-  useEffect(() => {
-    document.documentElement.className = theme;
-    localStorage.setItem("ft_theme", theme);
-  }, [theme]);
-
+  // load auth state & history
   useEffect(() => {
     const unsub = onAuthChange(async (u) => {
       if (u) {
-        setUser({ uid: u.uid, name: u.displayName, email: u.email, photo: u.photoURL });
-        // load user history
+        setUser({ uid: u.uid, name: u.displayName, photo: u.photoURL });
         try {
           const h = await loadHistory(u.uid);
           setHistory(h);
         } catch (e) {
-          console.error("load history", e);
+          console.error("loadHistory", e);
         }
       } else {
         setUser(null);
@@ -65,167 +52,157 @@ export default function App() {
     return () => unsub();
   }, []);
 
-  const handleSignIn = async () => {
-    try {
-      await signInWithGooglePopup();
-    } catch (e) {
-      console.error("signin", e);
-      alert("Sign-in failed");
-    }
-  };
+  // theme persistence
+  useEffect(() => {
+    localStorage.setItem("ft_theme", theme);
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
 
-  const handleSignOut = async () => {
-    try {
-      await signOutUser();
-      setHistory([]);
-    } catch (e) {
-      console.error(e);
+  // auto-scroll messages/history box
+  useEffect(() => {
+    if (messagesRef.current) {
+      messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
     }
-  };
+  }, [response, history]);
 
+  // handle ask
   const handleAsk = async () => {
-    if (!q.trim()) return;
-    // special creator response
+    const q = question.trim();
+    if (!q) return;
+    setLoading(true);
+    setResponse("Thinking...");
+
+    // quick special-case creator question
     const lower = q.toLowerCase();
     if (lower.includes("who created") || lower.includes("your creator") || lower.includes("who made you")) {
-      const answer = "I was created by Akin S. Sokpah from Liberia.";
-      setAiResp(answer);
-      speak(answer);
-      if (user) await trySave(user.uid, subject, q, answer);
+      const ans = "I was created by Akin S. Sokpah from Liberia.";
+      setResponse(ans);
+      speak(ans);
+      if (user) {
+        try { await saveHistory(user.uid, subject, q, ans); const h = await loadHistory(user.uid); setHistory(h);} catch(e){console.warn(e)}
+      }
+      setQuestion("");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setAiResp("Thinking...");
     try {
-      const res = await fetch(BACKEND_URL + "/api/ask", {
+      const res = await fetch(`${BACKEND_URL}/api/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject, question: q })
       });
-      const data = await res.json();
-      const answer = data?.answer || data?.choices?.[0]?.message?.content || "No response from AI.";
-      setAiResp(answer);
-      speak(answer);
 
-      if (user) await trySave(user.uid, subject, q, answer);
-    } catch (e) {
-      console.error("ask", e);
-      setAiResp("⚠️ Network error, please try again later.");
+      const data = await res.json();
+      const ans = data?.answer || data?.choices?.[0]?.message?.content || "No response from AI.";
+      setResponse(ans);
+      speak(ans);
+
+      if (user) {
+        try { await saveHistory(user.uid, subject, q, ans); const h = await loadHistory(user.uid); setHistory(h);} catch(e){console.warn(e)}
+      }
+    } catch (err) {
+      console.error("ask error", err);
+      setResponse("⚠️ Network error, please try again later.");
     } finally {
       setLoading(false);
+      setQuestion("");
     }
   };
 
-  async function trySave(uid, subject, question, answer) {
-    try {
-      await saveHistory(uid, subject, question, answer);
-      const h = await loadHistory(uid);
-      setHistory(h);
-    } catch (e) {
-      console.error("save history", e);
-    }
-  }
+  // sign in/out
+  const handleSignIn = async () => {
+    try { await signInWithGooglePopup(); } catch (e) { console.error(e); alert("Sign in failed"); }
+  };
+  const handleSignOut = async () => {
+    try { await signOutUser(); } catch (e) { console.error(e); }
+  };
 
   return (
-    <div className="app-root">
-      <header className="topbar">
-        <div className="brand">
-          <div className="logo">📘</div>
-          <div>
-            <div className="title">FullTask AI Tutor</div>
-            <div className="subtitle">Biology • Chemistry • Nursing • Physics • Math • English</div>
+    <div className="ft-app">
+      <header className="ft-header">
+        <div className="ft-brand">
+          <div className="ft-logo">📘</div>
+          <div className="ft-title">
+            <div className="main-title">FullTask AI Tutor</div>
+            <div className="subtitle">Biology • Chemistry • Physics • Mathematics • Nursing • English</div>
           </div>
         </div>
 
-        <div className="right-controls">
-          <select value={theme} onChange={(e) => setTheme(e.target.value)} className="theme-select">
-            <option value={THEMES.blue}>Soft Blue–Purple</option>
-            <option value={THEMES.galaxy}>Dark Galaxy</option>
-            <option value={THEMES.light}>Light White–Gold</option>
+        <div className="ft-controls">
+          <select className="theme-select" value={theme} onChange={(e) => setTheme(e.target.value)}>
+            <option value="blue">Soft Blue–Purple</option>
+            <option value="galaxy">Dark Galaxy</option>
+            <option value="light">Light White–Gold</option>
           </select>
 
           {user ? (
-            <div className="user-block">
-              <img src={user.photo} alt="avatar" className="avatar" />
+            <div className="user-inline">
+              <img src={user.photo} alt={user.name} className="avatar" />
               <span className="user-name">{user.name}</span>
-              <button className="btn small" onClick={handleSignOut}>Sign out</button>
+              <button className="btn signout" onClick={handleSignOut}>Sign out</button>
             </div>
           ) : (
-            <button className="btn" onClick={handleSignIn}>Sign in with Google</button>
+            <button className="btn signin" onClick={handleSignIn}>Sign in with Google</button>
           )}
         </div>
       </header>
 
-      <main className="main-area">
-        <section className="left">
+      <main className="ft-main">
+        <section className="left-column">
           <div className="card ask-card">
-            <h2>🧠 Ask anything about <span className="accent">{subject}</span></h2>
+            <h2 className="ask-heading">🧠 Ask anything about <span className="accent">{subject}</span></h2>
 
-            <div className="controls">
-              <select value={subject} onChange={(e) => setSubject(e.target.value)} className="subject-select">
-                {["Biology","Chemistry","Physics","Mathematics","Nursing","English"].map(s => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
+            <div className="subject-row">
+              <select className="subject-select" value={subject} onChange={(e) => setSubject(e.target.value)}>
+                {["Biology","Chemistry","Physics","Mathematics","Nursing","English"].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
 
               <textarea
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                placeholder={`Ask a ${subject} question...`}
                 className="question-input"
+                placeholder={`Ask a ${subject} question...`}
+                value={question}
+                onChange={(e) => setQuestion(e.target.value)}
+                rows={4}
               />
-              <div className="actions">
-                <button className="btn primary" onClick={handleAsk} disabled={loading}>
-                  {loading ? "Thinking..." : "Ask AI"}
-                </button>
-                <button className="btn outline" onClick={() => { speak(aiResp); }}>
-                  🔊 Read aloud
-                </button>
-              </div>
             </div>
 
-            <div className="ai-response">
+            <div className="action-row">
+              <button className="btn primary" onClick={handleAsk} disabled={loading}>{loading ? "Thinking..." : "Ask AI"}</button>
+              <button className="btn outline" onClick={() => speak(response)}>🔊 Read aloud</button>
+            </div>
+
+            <div className="response-panel">
               <div className="label">AI Response</div>
-              <div className="response-text">{aiResp}</div>
+              <div className="response" ref={messagesRef}>{response}</div>
             </div>
           </div>
         </section>
 
-        <aside className="right">
+        <aside className="right-column">
           <div className="card history-card">
-            <div className="history-header">
-              <h3>Saved History</h3>
-              <small>{user ? "Your recent Q&A" : "Sign in to save history"}</small>
-            </div>
-
-            {user ? (
-              history.length ? (
-                <div className="hist-list">
-                  {history.map((h) => (
-                    <div key={h.id} className="hist-item">
-                      <div className="hist-meta"><strong>{h.subject}</strong> • {h.createdAt?.toDate ? h.createdAt.toDate().toLocaleString() : ""}</div>
-                      <div className="hist-q">Q: {h.question}</div>
-                      <div className="hist-a">A: {h.answer}</div>
-                    </div>
-                  ))}
+            <h3>Saved History</h3>
+            <div className="history-list" ref={messagesRef}>
+              {user ? (history.length ? history.map(h => (
+                <div key={h.id} className="history-item">
+                  <div className="meta">{h.subject} • {h.createdAt?.toDate ? h.createdAt.toDate().toLocaleString() : ""}</div>
+                  <div className="q">Q: {h.question}</div>
+                  <div className="a">A: {h.answer}</div>
                 </div>
-              ) : <div className="empty">No history yet — ask and it will be saved.</div>
-            ) : (
-              <div className="empty">Sign in with Google to save and view your history</div>
-            )}
+              )) : <div className="empty">No history yet — ask and it will be saved.</div>) : <div className="empty">Sign in to save and view history</div>}
+            </div>
           </div>
 
           <div className="card about-card">
             <h4>About</h4>
             <p>FullTask AI Tutor — created by <strong>Akin S. Sokpah</strong> (Liberia).</p>
-            <a className="link" href={BACKEND_URL} target="_blank" rel="noreferrer">Backend: ai-tutor-e5m3.onrender.com</a>
+            <a className="backend-link" href={BACKEND_URL} target="_blank" rel="noreferrer">Backend: ai-tutor-e5m3.onrender.com</a>
           </div>
         </aside>
       </main>
 
-      <footer className="footer">
-        © 2025 FullTask AI Tutor — Akin S. Sokpah
+      <footer className="ft-footer">
+        © 2025 FullTask AI Tutor | Powered by Akin S. Sokpah
       </footer>
     </div>
   );
