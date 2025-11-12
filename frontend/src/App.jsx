@@ -1,96 +1,107 @@
 import React, { useState } from "react";
-import "./App.css";
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-
-// Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyC7cAN-mrE2PvmlQ11zLKAdHBhN7nUFjHw",
-  authDomain: "fir-u-c-students-web.firebaseapp.com",
-  databaseURL: "https://fir-u-c-students-web-default-rtdb.firebaseio.com",
-  projectId: "fir-u-c-students-web",
-  storageBucket: "fir-u-c-students-web.firebasestorage.app",
-  messagingSenderId: "113569186739",
-  appId: "1:113569186739:web:d8daf21059f43a79e841c6",
-};
+import { getDatabase, ref, push } from "firebase/database";
+import { firebaseConfig } from "./firebase";
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+const db = getDatabase(app);
 
-const App = () => {
+export default function App() {
   const [subject, setSubject] = useState("Biology");
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("");
-  const [speaking, setSpeaking] = useState(false);
+  const [response, setResponse] = useState("Ask anything about Biology — AI will answer instantly!");
 
-  const askTutor = async () => {
-    if (question.trim() === "") return;
-    if (question.toLowerCase().includes("who created you")) {
-      setResponse("I was created by Akin S. Sokpah from Liberia.");
-      speak("I was created by Akin S. Sokpah from Liberia.");
-      return;
-    }
+  // Fake AI handler (connect to your backend later)
+  const askAI = async () => {
+    if (!question.trim()) return;
 
     setResponse("Thinking...");
+
     try {
-      const res = await fetch(`https://ai-tutor-e5m3.onrender.com/api/ask?subject=${subject}&q=${encodeURIComponent(question)}`);
-      const data = await res.json();
-      setResponse(data.answer || "⚠️ Unable to connect to AI Tutor.");
-      speak(data.answer || "Unable to connect to AI Tutor.");
+      // Optional: Save to Firebase
+      await push(ref(db, "questions"), {
+        subject,
+        question,
+        createdAt: Date.now(),
+      });
+
+      // Mock AI reply
+      const reply = `This is an educational explanation about "${question}" in ${subject}.`;
+      setResponse(reply);
+      speak(reply);
     } catch (err) {
-      setResponse("⚠️ Network error. Try again later.");
+      setResponse("⚠️ Unable to connect to AI Tutor. Try again later.");
     }
   };
 
   const speak = (text) => {
-    if (!window.speechSynthesis) return;
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1;
-    utterance.pitch = 1;
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
+    utterance.lang = "en-US";
+    speechSynthesis.speak(utterance);
+  };
+
+  const handleCreatorQuestion = (text) => {
+    const lower = text.toLowerCase();
+    if (lower.includes("who created") || lower.includes("your creator")) {
+      setResponse("👨‍💻 This AI Tutor was created by Akin S. Sokpah from Liberia.");
+      speak("This AI Tutor was created by Akin S. Sokpah from Liberia.");
+      return true;
+    }
+    return false;
+  };
+
+  const handleAsk = () => {
+    if (handleCreatorQuestion(question)) return;
+    askAI();
   };
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>📘 FullTask AI Tutor</h1>
-        <p>Learn interactively with reading aloud and realistic background!</p>
-      </header>
+    <div className="flex flex-col items-center text-center p-8 space-y-8">
+      <h1 className="text-4xl font-bold">🧠 FullTask AI Tutor</h1>
+      <p className="text-gray-300">Select a subject and ask your AI tutor anything!</p>
 
-      <nav className="menu">
-        <button onClick={() => setSubject("Biology")}>Biology</button>
-        <button onClick={() => setSubject("Chemistry")}>Chemistry</button>
-        <button onClick={() => setSubject("Physics")}>Physics</button>
-        <button onClick={() => setSubject("Mathematics")}>Mathematics</button>
-        <button onClick={() => setSubject("English")}>English</button>
-        <button onClick={() => setSubject("Nursing")}>Nursing</button>
-      </nav>
+      <div className="flex flex-wrap justify-center gap-3">
+        {["Biology", "Chemistry", "Physics", "Mathematics", "Nursing", "English"].map((sub) => (
+          <button
+            key={sub}
+            onClick={() => setSubject(sub)}
+            className={`px-4 py-2 rounded-full ${
+              subject === sub ? "bg-blue-600" : "bg-gray-700 hover:bg-gray-600"
+            }`}
+          >
+            {sub}
+          </button>
+        ))}
+      </div>
 
-      <section className="ai-section">
-        <h2>🧠 Ask anything about {subject}</h2>
-        <textarea
-          placeholder="Type your question..."
+      <div className="w-full max-w-lg">
+        <h2 className="text-xl mb-2">Ask anything about {subject}</h2>
+        <input
+          type="text"
+          placeholder="Type your question here..."
+          className="w-full p-3 rounded-lg text-black"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
         />
-        <button onClick={askTutor}>Ask AI</button>
+        <button
+          onClick={handleAsk}
+          className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg"
+        >
+          Ask AI
+        </button>
+      </div>
 
-        <div className="response-box">
-          <h3>AI Response:</h3>
-          <p>{response}</p>
-        </div>
-        {speaking && <p className="speaking">🔊 Reading aloud...</p>}
-      </section>
+      <div className="max-w-lg w-full p-4 bg-gray-800 rounded-lg shadow-lg">
+        <h3 className="text-lg font-semibold mb-2">AI Response:</h3>
+        <p className="text-gray-200">{response}</p>
+      </div>
 
-      <footer>
-        © 2025 FullTask AI Tutor | Created by <strong>Akin S. Sokpah</strong> | Backend:{" "}
-        <a href="https://ai-tutor-e5m3.onrender.com/">AI Tutor API</a>
+      <footer className="text-gray-500 mt-10 text-sm">
+        © 2025 FullTask AI Tutor | Powered by Akin S. Sokpah | Backend:{" "}
+        <a href="https://ai-tutor-e5m3.onrender.com" className="text-blue-400 hover:underline">
+          ai-tutor-e5m3.onrender.com
+        </a>
       </footer>
     </div>
   );
-};
-
-export default App;
+}
