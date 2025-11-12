@@ -1,34 +1,7 @@
-/* theme */
-:root {
-  --bg: #f7fbff;
-  --card: #fff;
-  --text: #111827;
-  --muted: #6b7280;
-  --accent: #0b5cff;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
 }
-[data-theme="dark"] {
-  --bg: #0b1220;
-  --card: #0e1724;
-  --text: #e6eef8;
-  --muted: #9aa6b2;
-  --accent: #4f8bff;
-}
-body { background: var(--bg); color: var(--text); font-family: Inter, system-ui, Arial; margin:0; }
-
-/* cards */
-.card { background: var(--card); padding:12px; border-radius:12px; box-shadow: 0 6px 18px rgba(2,6,23,0.06); }
-
-/* buttons */
-.btn { background: var(--accent); color: white; border: none; padding: 10px 14px; border-radius: 8px; cursor:pointer; }
-.btn-small { background: #e6eefb; color: var(--text); border-radius:8px; padding:6px 8px; border:none; cursor:pointer; }
-.btn-small:hover, .btn:hover { opacity:0.95; }
-
-/* inputs */
-.input { width: 100%; padding:8px 10px; border-radius:8px; border:1px solid #e6eef8; }
-
-/* subject buttons */
-.sub-btn { display:block; width:100%; text-align:left; padding:8px; background:transparent; border:none; margin:4px 0; border-radius:6px; cursor:pointer; }
-.sub-btn.active { background: rgba(11,92,255,0.12); font-weight:600; }
-
-/* small layout tweak */
-aside { min-height: 60vh; }
