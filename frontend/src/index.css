@@ -3,5 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(145deg, #1a0026, #000, #240046);
+  background-attachment: fixed;
 }
