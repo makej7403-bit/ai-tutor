@@ -9,15 +9,18 @@
     font-family: "Poppins", sans-serif;
     margin: 0;
     padding: 0;
-    text-align: center;
     background: linear-gradient(135deg, #b993d6, #8ca6db);
     color: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
   }
 
   header {
     background: rgba(0, 0, 0, 0.25);
     padding: 20px 0;
     border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
   }
 
   h1 {
@@ -31,7 +34,6 @@
   }
 
   .profile {
-    margin-top: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -39,8 +41,8 @@
   }
 
   .profile img {
-    width: 60px;
-    height: 60px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     border: 3px solid #fff;
     object-fit: cover;
@@ -56,12 +58,21 @@
     font-weight: bold;
   }
 
+  main {
+    display: flex;
+    flex: 1;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    padding: 20px;
+  }
+
   .section {
     background: rgba(255, 255, 255, 0.15);
     padding: 25px;
-    margin: 25px auto;
+    margin: 10px;
     width: 90%;
-    max-width: 600px;
+    max-width: 550px;
     border-radius: 16px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   }
@@ -101,11 +112,42 @@
     font-style: italic;
   }
 
+  /* Sidebar */
+  .sidebar {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    margin: 10px;
+    width: 260px;
+    border-radius: 16px;
+    height: fit-content;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    max-height: 70vh;
+  }
+
+  .sidebar h3 {
+    margin-top: 0;
+    text-align: center;
+  }
+
   footer {
-    margin-top: 30px;
+    text-align: center;
     padding: 15px;
     background: rgba(0, 0, 0, 0.3);
     font-size: 0.9em;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    main {
+      flex-direction: column;
+      align-items: center;
+    }
+    .sidebar {
+      width: 90%;
+      max-width: 550px;
+      order: 2;
+    }
   }
 </style>
 </head>
@@ -113,41 +155,43 @@
 
 <header>
   <h1>🧠 FullTask AI Tutor</h1>
-  <div class="subjects">
-    Biology • Chemistry • Nursing • Physics • Math • English
-  </div>
+  <div class="subjects">Biology • Chemistry • Nursing • Physics • Math • English</div>
   <div class="profile">
-    <img src="https://via.placeholder.com/60" alt="Profile">
+    <img src="https://via.placeholder.com/55" alt="Profile">
     <span><b>Akin Saye Sokpah</b></span>
     <button class="signout">Sign out</button>
   </div>
 </header>
 
-<div class="section">
-  <h2>🧠 Ask anything about <span id="subject-title">Biology</span></h2>
+<main>
+  <div class="section">
+    <h2>🧠 Ask anything about <span id="subject-title">Biology</span></h2>
 
-  <select id="subject" onchange="updateSubject()">
-    <option>Biology</option>
-    <option>Chemistry</option>
-    <option>Physics</option>
-    <option>Mathematics</option>
-    <option>Nursing</option>
-    <option>English</option>
-  </select><br>
+    <select id="subject" onchange="updateSubject()">
+      <option>Biology</option>
+      <option>Chemistry</option>
+      <option>Physics</option>
+      <option>Mathematics</option>
+      <option>Nursing</option>
+      <option>English</option>
+    </select><br>
 
-  <input type="text" id="question" placeholder="Type your question here...">
-  <br>
+    <input type="text" id="question" placeholder="Type your question here...">
+    <br>
 
-  <button onclick="askAI()">Ask AI</button>
-  <button onclick="readAloud()">🔊 Read aloud</button>
+    <button onclick="askAI()">Ask AI</button>
+    <button onclick="readAloud()">🔊 Read aloud</button>
 
-  <div class="response-box" id="response-box">
-    <i>AI response will appear here...</i>
+    <div class="response-box" id="response-box">
+      <i>AI response will appear here...</i>
+    </div>
   </div>
 
-  <h3>📘 Saved History</h3>
-  <div id="history">No history yet — ask and it will be saved.</div>
-</div>
+  <div class="sidebar">
+    <h3>📘 Saved History</h3>
+    <div id="history">No history yet — ask and it will be saved.</div>
+  </div>
+</main>
 
 <footer>
   FullTask AI Tutor — created by <b>Akin S. Sokpah (Liberia)</b>.
@@ -174,7 +218,7 @@ async function askAI() {
   responseBox.innerHTML = "Thinking... 🤔";
 
   try {
-    // Replace YOUR_API_URL with your Render backend endpoint
+    // Replace with your real Render backend URL
     const res = await fetch("https://your-ai-api.onrender.com/ask", {
       method: "POST",
       headers: {"Content-Type": "application/json"},
